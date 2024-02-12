@@ -1486,6 +1486,7 @@ def compare_localization_experiment(
                 size=[list_y_model.shape[0]],
                 replace=True))
         bootstrap_list_metric = {}
+        individual_list_metric = {}
         for metric_key, metric_function in dict_metric_function.items():
             func = functools.partial(
                 func_to_parallelize_bootstrap,
@@ -1494,14 +1495,18 @@ def compare_localization_experiment(
                 metric_function=metric_function)
             if workers is None:
                 bootstrap_list_metric_val = [func(_) for _ in list_bootstrap_IDX]
+                individual_list_metric_val = [func([_]) for _ in range(len(list_y_model))]
             else:
                 with multiprocessing.Pool(workers) as pool:
                     bootstrap_list_metric_val = pool.map(func, list_bootstrap_IDX)
+                    individual_list_metric_val = pool.map(func, [[_] for _ in range(len(list_y_model))])
             bootstrap_list_metric[metric_key] = bootstrap_list_metric_val
+            individual_list_metric[metric_key] = individual_list_metric_val
         to_append = {'tag_expt': tag_expt, 'tag_model': tag_model}
         for metric_key in dict_metric_function.keys():
             to_append[metric_key] = metric[metric_key]
             to_append[f'bootstrap_list_{metric_key}'] = bootstrap_list_metric[metric_key]
+            to_append[f'list_{metric_key}'] = individual_list_metric[metric_key]
         df_results.append(to_append)
     df_results = pd.DataFrame(df_results)
     return df_results

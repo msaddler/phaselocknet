@@ -454,9 +454,11 @@ def compare_word_recognition_kell_like(
             bootstrap_y = list_y[bootstrap_IDX].mean(axis=0)
             bootstrap_list_metric[_] = np.array(metric_function(x, bootstrap_y)).reshape([-1])[0]
         metric = np.array(metric_function(x, y)).reshape([-1])[0]
+        list_metric = [np.array(metric_function(x, list_y[_])).reshape([-1])[0] for _ in range(list_y.shape[0])]
         df_results.append({
             'tag_model': tag_model,
             'metric': metric,
+            'list_metric': list_metric,
             'bootstrap_list_metric': bootstrap_list_metric,
         })
     df_results = pd.DataFrame(df_results)
@@ -494,9 +496,11 @@ def compare_word_recognition_speech_in_synthetic_textures(
             bootstrap_y = list_y[bootstrap_IDX].mean(axis=0)
             bootstrap_list_metric[_] = np.array(metric_function(x, bootstrap_y)).reshape([-1])[0]
         metric = np.array(metric_function(x, y)).reshape([-1])[0]
+        list_metric = [np.array(metric_function(x, list_y[_])).reshape([-1])[0] for _ in range(list_y.shape[0])]
         df_results.append({
             'tag_model': tag_model,
             'metric': metric,
+            'list_metric': list_metric,
             'bootstrap_list_metric': bootstrap_list_metric,
         })
     df_results = pd.DataFrame(df_results)
@@ -541,9 +545,11 @@ def compare_recognition_pitch_altered(
             bootstrap_y = list_y[bootstrap_IDX].mean(axis=0)
             bootstrap_list_metric[_] = np.array(metric_function(x, bootstrap_y)).reshape([-1])[0]
         metric = np.array(metric_function(x, y)).reshape([-1])[0]
+        list_metric = [np.array(metric_function(x, list_y[_])).reshape([-1])[0] for _ in range(list_y.shape[0])]
         df_results.append({
             'tag_model': tag_model,
             'metric': metric,
+            'list_metric': list_metric,
             'bootstrap_list_metric': bootstrap_list_metric,
         })
     df_results = pd.DataFrame(df_results)
@@ -594,9 +600,11 @@ def compare_word_recognition_hopkins_moore_2009(
             bootstrap_y = list_y[bootstrap_IDX].mean(axis=0)
             bootstrap_list_metric[_] = np.array(metric_function(x, bootstrap_y)).reshape([-1])[0]
         metric = np.array(metric_function(x, y)).reshape([-1])[0]
+        list_metric = [np.array(metric_function(x, list_y[_])).reshape([-1])[0] for _ in range(list_y.shape[0])]
         df_results.append({
             'tag_model': tag_model,
             'metric': metric,
+            'list_metric': list_metric,
             'bootstrap_list_metric': bootstrap_list_metric,
         })
     df_results = pd.DataFrame(df_results)
@@ -634,9 +642,11 @@ def compare_spkr_discrimination_timit_ssn(
             bootstrap_y = list_y[bootstrap_IDX].mean(axis=0)
             bootstrap_list_metric[_] = np.array(metric_function(x, bootstrap_y)).reshape([-1])[0]
         metric = np.array(metric_function(x, y)).reshape([-1])[0]
+        list_metric = [np.array(metric_function(x, list_y[_])).reshape([-1])[0] for _ in range(list_y.shape[0])]
         df_results.append({
             'tag_model': tag_model,
             'metric': metric,
+            'list_metric': list_metric,
             'bootstrap_list_metric': bootstrap_list_metric,
         })
     df_results = pd.DataFrame(df_results)
