@@ -11,6 +11,7 @@
 
 offset=0
 job_idx=$(($SLURM_ARRAY_TASK_ID + $offset))
+eval_batch_size=32
 
 # Specify model directory (`job_idx` is used to parallelize over `list_model_dir`)
 declare -a list_model_dir=(
@@ -195,18 +196,54 @@ fi
 if [[ "$model_dir" == *"IHC0050"* ]]; then
     DATA_TAG="*IHC0050*"
 fi
-# Specify training and validation datasets using `DATA_TAG`
-regex_train="$VAST_SCRATCH_PATH/data_WSN/JSIN_all_v3_augmented_2022JAN/train/$DATA_TAG/*tfrecords"
-regex_valid="$VAST_SCRATCH_PATH/data_WSN/JSIN_all_v3_augmented_2022JAN/valid/$DATA_TAG/*tfrecords"
 
-# Activate python environment and run `phaselocknet_run.py`
+# Activate python environment and run `phaselocknet_run.py` for each evaluation dataset
 module add openmind8/anaconda
 source activate tf
+
+regex_eval="$VAST_SCRATCH_PATH/data_word_recognition/human_experiment_v00/foreground60dbspl/$DATA_TAG/*.tfrecords"
+filename_eval="EVAL_word_recognition_human_experiment_v00_foreground60dbspl.json"
 python -u phaselocknet_run.py \
 -m "$model_dir" \
 -c "config.json" \
 -a "arch.json" \
--t "$regex_train" \
--v "$regex_valid" \
--mp 1 \
-2>&1 | tee "$model_dir/log_optimize.out"
+-e "$regex_eval" \
+-efn "$filename_eval" \
+-ebs $eval_batch_size \
+-wpo 0
+
+regex_eval="$VAST_SCRATCH_PATH/data_word_recognition/human_experiment_v00/inharmonic_foreground60dbspl/$DATA_TAG/*.tfrecords"
+filename_eval="EVAL_word_recognition_human_experiment_v00_inharmonic_foreground60dbspl.json"
+python -u phaselocknet_run.py \
+-m "$model_dir" \
+-c "config.json" \
+-a "arch.json" \
+-e "$regex_eval" \
+-efn "$filename_eval" \
+-ebs $eval_batch_size \
+-wpo 0
+
+regex_eval="$VAST_SCRATCH_PATH/data_word_recognition/speech_in_synthetic_textures/snr???/$DATA_TAG/*.tfrecords"
+filename_eval="EVAL_word_recognition_speech_in_synthetic_textures.json"
+python -u phaselocknet_run.py \
+-m "$model_dir" \
+-c "config.json" \
+-a "arch.json" \
+-e "$regex_eval" \
+-efn "$filename_eval" \
+-ebs $eval_batch_size \
+-wpo 0
+
+for EXPT_TAG in "hopkins_moore_2009" "pitch_altered_v00"
+do
+    regex_eval="$VAST_SCRATCH_PATH/data_word_recognition/$EXPT_TAG/$DATA_TAG/*.tfrecords"
+    filename_eval="EVAL_$EXPT_TAG.json"
+    python -u phaselocknet_run.py \
+    -m "$model_dir" \
+    -c "config.json" \
+    -a "arch.json" \
+    -e "$regex_eval" \
+    -efn "$filename_eval" \
+    -ebs $eval_batch_size \
+    -wpo 0
+done
