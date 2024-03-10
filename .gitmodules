@@ -1,0 +1,6 @@
+[submodule "bez2018model"]
+	path = bez2018model
+	url = git@github.com:msaddler/bez2018model.git
+[submodule "virtual_acoustic_room"]
+	path = virtual_acoustic_room
+	url = git@github.com:msaddler/virtual_acoustic_room.git
