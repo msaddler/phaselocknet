@@ -173,7 +173,7 @@ def fit_threshold(independent_variable, dependent_variable, threshold_value=0.70
     return threshold
 
 
-def get_azim_to_itd_mapping(fn='/scratch2/weka/mcdermott/msaddler/HRTF_ITDs.pkl'):
+def get_azim_to_itd_mapping(fn='data/misc/kemar_hrtf_itds.pkl'):
     """
     """
     with open(fn, 'rb') as f:
@@ -184,7 +184,7 @@ def get_azim_to_itd_mapping(fn='/scratch2/weka/mcdermott/msaddler/HRTF_ITDs.pkl'
     return azim_to_itd
 
 
-def get_azim_to_ild_mapping(fn='/scratch2/weka/mcdermott/msaddler/HRTF_freq_specific_ILDs.pkl', freq='low'):
+def get_azim_to_ild_mapping(fn='data/misc/kemar_hrtf_ilds.pkl', freq='low'):
     """
     """
     with open(fn, 'rb') as f:
