@@ -11,7 +11,6 @@ import scipy.stats
 import numpy as np
 import pandas as pd
 
-sys.path.append('/om2/user/msaddler/python-packages/msutil')
 import util_misc
 
 
@@ -77,131 +76,23 @@ def compute_srt(df_results):
     return df_results
 
 
-def get_voice_discrimination_trials(df, list_random_seed=[2]):
-    """
-    """
-    df_to_sample = df.groupby(['speaker_id_int']).agg({
-        'sentence_id_int': 'unique',
-        'speaker_sex_int': 'first',
-    }).reset_index().rename(columns={
-        'speaker_id_int': 'spkr0',
-        'sentence_id_int': 'spkr0_sent',
-        'speaker_sex_int': 'spkr0_sex',
-    })
-    map_spkr_to_sent = dict(zip(df_to_sample['spkr0'], df_to_sample['spkr0_sent']))
-    map_spkr_to_sex = dict(zip(df_to_sample['spkr0'], df_to_sample['spkr0_sex']))
-    def sample_trials(dfi):
-        l0 = list(np.random.choice(dfi['spkr0_sent'], size=len(dfi['spkr0_sent']), replace=False))
-        l1 = list(np.random.choice(dfi['spkr1_sent'], size=len(dfi['spkr1_sent']), replace=False))
-        dfi['list_spkr_sent_0'] = l0[:2] + l1[:1]
-        dfi['list_spkr_sent_1'] = l0[-1:] + l1[-2:]
-        dfi['list_spkr_sex_0'] = [dfi['spkr0_sex'], dfi['spkr0_sex'], dfi['spkr1_sex']]
-        dfi['list_spkr_sex_1'] = [dfi['spkr0_sex'], dfi['spkr1_sex'], dfi['spkr1_sex']]
-        dfi['list_spkr_0'] = [dfi['spkr0'], dfi['spkr0'], dfi['spkr1']]
-        dfi['list_spkr_1'] = [dfi['spkr0'], dfi['spkr1'], dfi['spkr1']]
-        return dfi
-    list_df_trials = []
-    for random_seed in list_random_seed:
-        np.random.seed(random_seed)
-        df_trials = df_to_sample.copy()
-        list_spkr0 = list(df_trials.sample(frac=1)['spkr0'].values)
-        list_spkr1 = list_spkr0[1:] + list_spkr0[:1]
-        map_spkr0_to_spkr1 = dict(zip(list_spkr0, list_spkr1))
-        df_trials['spkr1'] = df_trials['spkr0'].map(map_spkr0_to_spkr1)
-        df_trials['spkr1_sent'] = df_trials['spkr1'].map(map_spkr_to_sent)
-        df_trials['spkr1_sex'] = df_trials['spkr1'].map(map_spkr_to_sex)
-        df_trials = df_trials.apply(sample_trials, axis=1)
-        df_trials = pd.concat([
-            df_trials[[
-                f'list_spkr_{_}',
-                f'list_spkr_sex_{_}',
-                f'list_spkr_sent_{_}',
-            ]].rename(columns={
-                f'list_spkr_{_}': 'list_spkr',
-                f'list_spkr_sex_{_}': 'list_sex',
-                f'list_spkr_sent_{_}': 'list_sent',
-            }) for _ in [0, 1]
-        ])
-        df_trials['random_seed'] = random_seed
-        df_trials['sex'] = df_trials['list_sex'].map(lambda _: len(np.unique(_)) * max(_))
-        list_df_trials.append(df_trials)
-    df_trials = pd.concat(list_df_trials).reset_index(drop=True)
-    return df_trials
-
-
-def run_voice_discrimination_trials(
-        df,
-        df_trials,
-        dist_metric=scipy.stats.entropy,
-        key_sent='sentence_id_int',
-        key_prob='label_speaker_int:probs_out',
-        overwrite=False):
-    """
-    """
-    def to_apply(dfi):
-        map_sent_to_prob = dict(zip(dfi[key_sent], dfi[key_prob]))
-        list_dist_first = []
-        list_dist_last = []
-        list_correct = []
-        for itr_trial in range(len(df_trials)):
-            list_spkr = df_trials.iloc[itr_trial]['list_spkr']
-            list_sent = df_trials.iloc[itr_trial]['list_sent']
-            list_prob = [map_sent_to_prob[_] for _ in list_sent]
-            dist_first = dist_metric(list_prob[0], list_prob[1])
-            dist_last = dist_metric(list_prob[2], list_prob[1])
-            response_pred = int(dist_first < dist_last)
-            response_true = int(list_spkr[0] == list_spkr[1])
-            list_correct.append(response_pred == response_true)
-            list_dist_first.append(dist_first)
-            list_dist_last.append(dist_last)
-        dfi = df_trials.reset_index(drop=True).copy()
-        dfi['correct'] = list_correct
-        dfi['dist_first'] = list_dist_first
-        dfi['dist_last'] = list_dist_last
-        return dfi
-    assert df['fn_eval'].nunique() == 1
-    fn_eval = df.iloc[0]['fn_eval']
-    fn_results = fn_eval.replace('.json', '_results.pkl')
-    assert fn_results != fn_eval
-    if not overwrite and os.path.exists(fn_results):
-        df_results = pd.read_pickle(fn_results)
-    else:
-        df_results = df.groupby([
-            'tag_expt',
-            'tag_model',
-            'fn_eval',
-            'background_condition',
-            'snr',
-        ]).apply(to_apply).reset_index()
-        df_results.to_pickle(fn_results)
-    return df_results
-
-
-def run_spkr_word_experiments(list_regex_dir_model, workers=20, **kwargs):
+def run_spkr_word_experiments(
+        list_regex_dir_model,
+        dir_human_data='data/human/spkr_word_recognition',
+        dict_basename_eval={},
+        workers=20,
+        **kwargs):
     """
     """
     EXPERIMENT_DATAFRAMES = {}
-    dir_human_data = '/om2/user/msaddler/tfauditoryutil/saved_models/HUMAN/spkr_word'
-
-    dict_basename_eval = {
-        'kell_like_inharmonic': 'EVAL_word_recognition_human_experiment_v00_inharmonic_foreground60dbspl.json',
-        'kell_like': 'EVAL_word_recognition_human_experiment_v00_foreground60dbspl.json',
-        'speech_in_synthetic_textures': 'EVAL_word_recognition_speech_in_synthetic_textures.json',
-        'hopkins_moore_2009': 'EVAL_hopkins_moore_2009.json',
-        'pitch_altered': 'EVAL_pitch_altered_v00.json',
-        'spkr_discrimination_timit_ssn': 'EVAL_spkr_discrimination_timit_ssn.json',
-    }
-    if 'dict_basename_eval' not in kwargs:
-        kwargs['dict_basename_eval'] = dict_basename_eval
-    else:
-        dict_basename_eval = kwargs['dict_basename_eval']
-    if 'dict_load_arr' not in kwargs:
-        kwargs['dict_load_arr'] = {'spkr_discrimination_timit_ssn': True}
     df = []
     for regex_dir_model in list_regex_dir_model:
         list_dir_model = glob.glob(regex_dir_model)
         with multiprocessing.Pool(min(workers, len(list_dir_model))) as p:
-            func = functools.partial(func_to_parallelize_spkr_word, **kwargs)
+            func = functools.partial(
+                func_to_parallelize_spkr_word,
+                dict_basename_eval=dict_basename_eval,
+                **kwargs)
             list_df = p.map(func, list_dir_model)
         df_tmp = pd.concat(list_df)
         df_tmp['tag_model'] = regex_dir_model
@@ -261,7 +152,12 @@ def run_spkr_word_experiments(list_regex_dir_model, workers=20, **kwargs):
             key_metric: [list, 'mean', 'sem'] for key_metric in list_key_metric
         }).reset_index(), sep='_')
         df_results = df_results.sort_index(axis=1)
-        df_human = pd.read_pickle(os.path.join(dir_human_data, 'human_data_saddler_2023_kell_like.pkl'))
+        df_human = pd.read_pickle(
+            os.path.join(
+                dir_human_data,
+                'word_recognition_as_function_of_snr_and_noise_condition.pkl',
+            )
+        )
         df_results = pd.concat([df_human, df_results])
         EXPERIMENT_DATAFRAMES[tag_experiment] = df_results
 
@@ -282,7 +178,12 @@ def run_spkr_word_experiments(list_regex_dir_model, workers=20, **kwargs):
         ]).agg({
             key_metric: 'mean' for key_metric in list_key_metric
         }).reset_index()
-        df_human = pd.read_pickle(os.path.join(dir_human_data, 'human_data_saddler_2023_speech_in_synthetic_textures.pkl'))
+        df_human = pd.read_pickle(
+            os.path.join(
+                dir_human_data,
+                'word_recognition_in_different_auditory_textures.pkl',
+            )
+        )
         df_results = pd.concat([df_human, df_results])
         df_results = util_misc.flatten_columns(
             df_results.groupby([
@@ -329,7 +230,12 @@ def run_spkr_word_experiments(list_regex_dir_model, workers=20, **kwargs):
             key_metric: [list, 'mean', 'sem'] for key_metric in list_key_metric
         }).reset_index(), sep='_')
         df_results = df_results.sort_index(axis=1)
-        df_human = pd.read_pickle(os.path.join(dir_human_data, 'human_data_saddler_2023_pitch_altered.pkl'))
+        df_human = pd.read_pickle(
+            os.path.join(
+                dir_human_data,
+                'spkr_and_word_recognition_with_pitch_altered_speech.pkl',
+            )
+        )
         df_results = pd.concat([df_human, df_results])
         EXPERIMENT_DATAFRAMES[tag_experiment] = df_results
 
@@ -379,44 +285,12 @@ def run_spkr_word_experiments(list_regex_dir_model, workers=20, **kwargs):
         ]).agg({
             'srt': [list, 'mean', 'sem']
         }).reset_index(), sep='_')
-        df_human = pd.read_pickle(os.path.join(dir_human_data, 'human_data_hopkins_moore_2009_tfs_manipulation.pkl'))
-        df_results = pd.concat([df_human, df_results])
-        EXPERIMENT_DATAFRAMES[tag_experiment] = df_results
-
-    tag_experiment = 'spkr_discrimination_timit_ssn'
-    if tag_experiment in dict_basename_eval:
-        print(f"[run_spkr_word_experiments] `{tag_experiment}` experiment")
-        df_results = df[df.tag_expt == tag_experiment]
-        df_trials = get_voice_discrimination_trials(df_results, list_random_seed=[2])
-        list_df_results = [_[1] for _ in df_results.groupby(['tag_expt', 'tag_model', 'fn_eval'])]
-        with multiprocessing.Pool(min(workers, len(list_df_results))) as p:
-            func = functools.partial(
-                run_voice_discrimination_trials,
-                df_trials=df_trials,
-                key_sent='sentence_id_int',
-                key_prob='label_speaker_int:probs_out',
-                overwrite=False)
-            list_df_results = p.map(func, list_df_results)
-        df_results = pd.concat(list_df_results).reset_index(drop=True)
-        df_results = util_misc.flatten_columns(
-            df_results.groupby([
-                'tag_expt',
-                'tag_model',
-                'fn_eval',
-                'background_condition',
-                'snr',
-            ]).agg({
-                'correct': 'mean',
-            }).reset_index().groupby([
-                'tag_expt',
-                'tag_model',
-                'background_condition',
-                'snr',
-            ]).agg({
-                'correct': [list, 'mean', 'sem']
-            }).reset_index(),
-            sep='_')
-        df_human = pd.read_pickle(os.path.join(dir_human_data, 'human_data_saddler_2023_spkr_discrimination_timit_ssn.pkl'))
+        df_human = pd.read_pickle(
+            os.path.join(
+                dir_human_data,
+                'hopkins_moore_2009_tone_vocoded_word_recognition.pkl',
+            )
+        )
         df_results = pd.concat([df_human, df_results])
         EXPERIMENT_DATAFRAMES[tag_experiment] = df_results
 
@@ -427,7 +301,7 @@ def compare_word_recognition_kell_like(
         df,
         restrict_conditions=None,
         metric_function=scipy.stats.pearsonr,
-        bootstrap_repeats=200,
+        bootstrap_repeats=1000,
         random_seed=0):
     """
     """
@@ -469,7 +343,7 @@ def compare_word_recognition_speech_in_synthetic_textures(
         df,
         restrict_conditions=None,
         metric_function=scipy.stats.pearsonr,
-        bootstrap_repeats=200,
+        bootstrap_repeats=1000,
         random_seed=0):
     """
     """
@@ -511,7 +385,7 @@ def compare_recognition_pitch_altered(
         df,
         key_task='word',
         metric_function=scipy.stats.pearsonr,
-        bootstrap_repeats=200,
+        bootstrap_repeats=1000,
         random_seed=0):
     """
     """
@@ -560,7 +434,7 @@ def compare_word_recognition_hopkins_moore_2009(
         df,
         use_relative_srt=True,
         metric_function=scipy.stats.pearsonr,
-        bootstrap_repeats=200,
+        bootstrap_repeats=1000,
         random_seed=0):
     """
     """
@@ -593,48 +467,6 @@ def compare_word_recognition_hopkins_moore_2009(
         x = df_comparison['srt_mean_human'].values
         y = df_comparison['srt_mean_model'].values
         list_y = np.array(list(df_comparison['srt_list_model'].values)).T
-        IDX = np.arange(0, list_y.shape[0], dtype=int)
-        bootstrap_list_metric = np.zeros(bootstrap_repeats)
-        for _ in range(bootstrap_repeats):
-            bootstrap_IDX = np.random.choice(IDX, size=[len(IDX)], replace=True)
-            bootstrap_y = list_y[bootstrap_IDX].mean(axis=0)
-            bootstrap_list_metric[_] = np.array(metric_function(x, bootstrap_y)).reshape([-1])[0]
-        metric = np.array(metric_function(x, y)).reshape([-1])[0]
-        list_metric = [np.array(metric_function(x, list_y[_])).reshape([-1])[0] for _ in range(list_y.shape[0])]
-        df_results.append({
-            'tag_model': tag_model,
-            'metric': metric,
-            'list_metric': list_metric,
-            'bootstrap_list_metric': bootstrap_list_metric,
-        })
-    df_results = pd.DataFrame(df_results)
-    return df_results
-
-
-def compare_spkr_discrimination_timit_ssn(
-        df,
-        restrict_conditions=None,
-        metric_function=scipy.stats.pearsonr,
-        bootstrap_repeats=200,
-        random_seed=0):
-    """
-    """
-    if restrict_conditions is not None:
-        df = df[df['background_condition'].isin(restrict_conditions)].copy()
-    np.random.seed(random_seed)
-    df_human = df[df['tag_model'] == 'human']
-    df_results = []
-    for tag_model in sorted(set(df['tag_model'].unique()).difference({'human'})):
-        df_model = df[df['tag_model'] == tag_model]
-        df_comparison = pd.merge(
-            df_human,
-            df_model,
-            on=['background_condition', 'snr'],
-            how='inner',
-            suffixes=('_human', '_model'))
-        x = df_comparison['correct_mean_human'].values
-        y = df_comparison['correct_mean_model'].values
-        list_y = np.array(list(df_comparison['correct_list_model'].values)).T
         IDX = np.arange(0, list_y.shape[0], dtype=int)
         bootstrap_list_metric = np.zeros(bootstrap_repeats)
         for _ in range(bootstrap_repeats):
