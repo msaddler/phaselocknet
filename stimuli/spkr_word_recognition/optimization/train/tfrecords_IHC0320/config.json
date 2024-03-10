@@ -1,0 +1,90 @@
+{
+    "bytes_description": "config_bytes_description.pkl",
+    "compression_type": "GZIP",
+    "disp_step": 1,
+    "examples_per_tfrecord_fin": 1000,
+    "examples_per_tfrecord_tmp": 20,
+    "feature_description": "config_feature_description.pkl",
+    "kwargs_ExampleProcessor": {
+        "key_dbspl": null,
+        "key_noise": null,
+        "key_signal": "/stimuli/signal",
+        "key_signal_fs": "/sources/signal/sr",
+        "key_snr": null,
+        "kwargs_nervegram": {
+            "IhcLowPass_cutoff": 320,
+            "IhcLowPass_order": 7,
+            "bandwidth_scale_factor": 1.0,
+            "buffer_end_dur": 0.0,
+            "buffer_start_dur": 0.0,
+            "cf_list": null,
+            "cihc": 1.0,
+            "cohc": 1.0,
+            "implnt": 0,
+            "max_cf": 8000.0,
+            "max_spikes_per_train": 1000,
+            "min_cf": 125,
+            "nervegram_dtype": "float16",
+            "nervegram_dur": null,
+            "nervegram_fs": 10000.0,
+            "nervegram_spike_tensor_fs": 100000.0,
+            "noiseType": 1,
+            "num_cf": 50,
+            "num_spike_trains": 1,
+            "pin_dBSPL": null,
+            "pin_dBSPL_flag": 0,
+            "pin_fs": 100000.0,
+            "random_seed": null,
+            "return_meanrates": true,
+            "return_spike_tensor_dense": false,
+            "return_spike_tensor_sparse": false,
+            "return_spike_times": false,
+            "return_vihcs": false,
+            "species": 2,
+            "spont": [
+                70.0,
+                4.0,
+                0.1
+            ],
+            "squeeze_channel_dim": true,
+            "squeeze_spont_dim": true,
+            "synapseMode": 0,
+            "tabs": 0.0006,
+            "trel": 0.0006
+        },
+        "list_keys_to_copy": [
+            [
+                "/augment_STRAIGHT_f0_shift",
+                "augment_STRAIGHT_f0_shift"
+            ],
+            [
+                "/augment_STRAIGHT_whisper",
+                "augment_STRAIGHT_whisper"
+            ],
+            [
+                "/sources/noise/labels_binary_via_int",
+                "label_audioset_multihot"
+            ],
+            [
+                "/sources/signal/speaker_int",
+                "label_speaker_int"
+            ],
+            [
+                "/sources/signal/word_int",
+                "label_word_int"
+            ],
+            [
+                "/sources/noise/snr",
+                "snr"
+            ]
+        ],
+        "list_keys_to_ignore": [
+            "pin"
+        ],
+        "range_dbspl": [
+            30.0,
+            90.0
+        ],
+        "range_snr": null
+    }
+}
