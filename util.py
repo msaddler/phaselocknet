@@ -113,7 +113,7 @@ def make_plot_comparison_metrics(
         dfi = dfi.iloc[0]
         color, label = get_color_and_label_from_model_tag(tag_model)
         label = label.replace(' Hz IHC filter', '')
-        if 'group' in tag_model:
+        if 'delayed' in tag_model:
             facecolor = 'orange'
             label = label + ' (delayed)' if include_legend else label + '\n' + r'$^{\text{(delayed)}}$'
         else:
