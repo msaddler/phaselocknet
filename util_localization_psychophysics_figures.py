@@ -5,7 +5,6 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
-sys.path.append('/om2/user/msaddler/python-packages/msutil')
 import util_figures
 import util
 

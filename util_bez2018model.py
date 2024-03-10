@@ -16,13 +16,11 @@ os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
 import tensorflow as tf
 
 import util_tfrecords
-
-sys.path.append('/om2/user/msaddler/python-packages/bez2018model')
-import bez2018model
-
-sys.path.append('/om2/user/msaddler/python-packages/msutil')
 import util_stimuli
 import util
+
+sys.path.append('bez2018model')
+import bez2018model
 
 
 class SignalHandler:

@@ -8,8 +8,6 @@ import numpy as np
 import google.protobuf.json_format
 
 import util_signal
-
-sys.path.append('/om2/user/msaddler/python-packages/msutil')
 import util
 
 

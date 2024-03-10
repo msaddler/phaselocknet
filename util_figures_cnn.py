@@ -4,12 +4,10 @@ import json
 import copy
 import numpy as np
 import tensorflow as tf
-
 import matplotlib.pyplot as plt
 import matplotlib.patches
 import matplotlib.transforms
 
-sys.path.append('/om2/user/msaddler/tfauditoryutil')
 import util_network
 
 

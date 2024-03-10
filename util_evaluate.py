@@ -8,9 +8,6 @@ import pandas as pd
 import tensorflow as tf
 
 import util_tfrecords
-
-ROOT_MOUNT_POINT = os.environ.get('ROOT_MOUNT_POINT', '')
-sys.path.append(ROOT_MOUNT_POINT + '/om2/user/msaddler/python-packages/msutil')
 import util
 
 
