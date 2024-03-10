@@ -10,7 +10,7 @@ import google.protobuf.json_format
 import util_signal
 
 sys.path.append('/om2/user/msaddler/python-packages/msutil')
-import util_misc
+import util
 
 
 def _bytes_feature(value):
@@ -130,7 +130,7 @@ def write_tfrecords_from_hdf5(fn_src,
         if feature_paths is None:
             print('### Inferring feature paths from {}:'.format(fn_src))
             feature_paths = []
-            for k_src in util_misc.get_hdf5_dataset_key_list(f_src):
+            for k_src in util.get_hdf5_dataset_key_list(f_src):
                 if f_src[k_src].shape[0] > 1:
                     feature_paths.append(k_src)
                     print('|__ {}'.format(k_src))

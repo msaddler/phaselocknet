@@ -11,7 +11,7 @@ import scipy.stats
 import numpy as np
 import pandas as pd
 
-import util_misc
+import util
 
 
 def func_to_parallelize_spkr_word(
@@ -108,7 +108,7 @@ def run_spkr_word_experiments(
             'correct_spkr',
             'correct_word',
         ]
-        df_results = util_misc.flatten_columns(df_results.groupby([
+        df_results = util.flatten_columns(df_results.groupby([
             'tag_expt',
             'tag_model',
             'fn_eval',
@@ -135,7 +135,7 @@ def run_spkr_word_experiments(
             'correct_spkr',
             'correct_word',
         ]
-        df_results = util_misc.flatten_columns(df_results.groupby([
+        df_results = util.flatten_columns(df_results.groupby([
             'tag_expt',
             'tag_model',
             'fn_eval',
@@ -185,7 +185,7 @@ def run_spkr_word_experiments(
             )
         )
         df_results = pd.concat([df_human, df_results])
-        df_results = util_misc.flatten_columns(
+        df_results = util.flatten_columns(
             df_results.groupby([
                 'tag_expt',
                 'tag_model',
@@ -213,7 +213,7 @@ def run_spkr_word_experiments(
         df_results.loc[df_results['inharmonic'] == 1.0, 'f0_shift_in_semitones'] = 0
         df_results.loc[df_results['inharmonic'] == 1.0, 'condition'] = 'inharmonic'
         df_results.loc[df_results['inharmonic'] != 1.0, 'condition'] = 'harmonic'
-        df_results = util_misc.flatten_columns(df_results.groupby([
+        df_results = util.flatten_columns(df_results.groupby([
             'tag_expt',
             'tag_model',
             'fn_eval',
@@ -276,7 +276,7 @@ def run_spkr_word_experiments(
             list_df_results = p.map(compute_srt, list_df_results)
         df_results = pd.concat(list_df_results).reset_index()
         EXPERIMENT_DATAFRAMES[tag_experiment + '_raw'] = df_results.copy().sort_index(axis=1)
-        df_results = util_misc.flatten_columns(df_results.groupby([
+        df_results = util.flatten_columns(df_results.groupby([
             'tag_expt',
             'tag_model',
             'background_condition',

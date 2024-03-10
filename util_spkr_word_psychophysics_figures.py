@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 
 sys.path.append('/om2/user/msaddler/python-packages/msutil')
 import util_figures
-import util_misc
+import util
 
 
 def make_plot_kell_like_recognition(

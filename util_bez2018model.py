@@ -22,7 +22,7 @@ import bez2018model
 
 sys.path.append('/om2/user/msaddler/python-packages/msutil')
 import util_stimuli
-import util_misc
+import util
 
 
 class SignalHandler:
@@ -192,7 +192,7 @@ def write_config(dir_dst,
             pickle.dump(bytes_description, f_handle)
             print('[WROTE CONFIG] {}'.format(fn_pckl_bytes_description))
     with open(fn_json, 'w') as f_handle:
-        json.dump(CONFIG, f_handle, indent=4, sort_keys=True, cls=util_misc.NumpyEncoder)
+        json.dump(CONFIG, f_handle, indent=4, sort_keys=True, cls=util.NumpyEncoder)
         print('[WROTE CONFIG] {}'.format(fn_json))
     return
 
@@ -241,7 +241,7 @@ def get_parallel_split(regex_src,
     with h5py.File(fn_src, 'r') as f_src:
         if src_key is None:
             N = 0
-            for src_key in util_misc.get_hdf5_dataset_key_list(f_src):
+            for src_key in util.get_hdf5_dataset_key_list(f_src):
                 if len(f_src[src_key].shape) > 0:
                     N = max(N, f_src[src_key].shape[0])
         else:

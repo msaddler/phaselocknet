@@ -11,7 +11,7 @@ import scipy.stats
 import numpy as np
 import pandas as pd
 
-import util_misc
+import util
 
 
 def load_eval_dict(fn_eval, keys_to_ignore=[]):
@@ -854,7 +854,7 @@ def run_localization_experiments(
         df_human = pd.read_csv(os.path.join(dir_human_data, 'mills_1958_minimum_audible_angle.csv'))
         df_human = df_human[df_human['f'] < 1e3]
         df_human['log_maa'] = np.log(df_human['maa'])
-        df_human = util_misc.flatten_columns(df_human.rename(columns={
+        df_human = util.flatten_columns(df_human.rename(columns={
             'f': 'f_ref',
             'azim': 'azim_ref',
         }).groupby([
@@ -882,7 +882,7 @@ def run_localization_experiments(
                 'maa': 'mean',
                 'log_maa': 'mean',
             }).reset_index()  
-            df = util_misc.flatten_columns(df.groupby([
+            df = util.flatten_columns(df.groupby([
                 'azim_ref',
             ]).agg({
                 'maa': ['mean', 'sem', list],
@@ -899,7 +899,7 @@ def run_localization_experiments(
         df_human = pd.read_csv(os.path.join(dir_human_data, 'brughera_etal_2013_itd_threshold.csv'))
         df_human = df_human.rename(columns={'subject': 'fn_eval'})
         df_human['log_itd_threshold'] = np.log(df_human['itd_threshold'])
-        df_human = util_misc.flatten_columns(df_human.groupby('f').agg({
+        df_human = util.flatten_columns(df_human.groupby('f').agg({
             'itd_threshold': ['mean', 'sem', list],
             'log_itd_threshold': ['mean', 'sem', list],
         }), sep='_').reset_index()
@@ -918,7 +918,7 @@ def run_localization_experiments(
                 'itd_threshold': 'mean',
                 'log_itd_threshold': 'mean',
             }).reset_index()
-            df = util_misc.flatten_columns(df.groupby('f').agg({
+            df = util.flatten_columns(df.groupby('f').agg({
                 'itd_threshold': ['mean', 'sem', list],
                 'log_itd_threshold': ['mean', 'sem', list],
             }), sep='_').reset_index()
@@ -960,7 +960,7 @@ def run_localization_experiments(
         df_results['ild_bias_imposed'] = df_results['ild_bias_imposed'].map(np.unique)
         df_results['itd_bias_response'] = df_results['itd_bias_imposed'] * df_results['itd_bias_weight']
         df_results['ild_bias_response'] = df_results['ild_bias_imposed'] * df_results['ild_bias_weight']
-        df_results = util_misc.flatten_columns(df_results.groupby(['tag_model', 'band']).agg({
+        df_results = util.flatten_columns(df_results.groupby(['tag_model', 'band']).agg({
             'itd_bias_weight': [list, 'mean', 'sem'],
             'ild_bias_weight': [list, 'mean', 'sem'],
             'itd_bias_imposed': list,
@@ -980,7 +980,7 @@ def run_localization_experiments(
             'deg_elev_err',
         ]
         df_human = pd.read_csv(os.path.join(dir_human_data, 'kulkarni_colburn_1998_spectral_smoothing.csv'))
-        df_human = util_misc.flatten_columns(df_human.rename(columns={'subject': 'fn_eval'}).groupby(
+        df_human = util.flatten_columns(df_human.rename(columns={'subject': 'fn_eval'}).groupby(
             ['smoothed', 'fn_eval']).agg({'pct_correct': 'mean'}).reset_index().groupby('smoothed').agg({
             'pct_correct': ['mean', 'sem', list],
             'fn_eval': list,
@@ -1002,7 +1002,7 @@ def run_localization_experiments(
             }).reset_index()
             df[('fn_eval', 'list')] = list_fn_eval
             df['tag_model'] = regex_dir_model
-            df = util_misc.flatten_columns(df, sep='_')
+            df = util.flatten_columns(df, sep='_')
             df_results.append(df)
             print(f'Completed experiment `{tag_experiment}` for {len(list_dir_model)} `{regex_dir_model}` models')
         df_results = pd.concat(df_results).reset_index(drop=True)
@@ -1039,7 +1039,7 @@ def run_localization_experiments(
                 'azim_err_lead': lambda _: np.sqrt(np.mean(np.square(_))),
                 'azim_err_lag': lambda _: np.sqrt(np.mean(np.square(_))),
             }).reset_index()
-            df = util_misc.flatten_columns(df.groupby(['delay']).agg({
+            df = util.flatten_columns(df.groupby(['delay']).agg({
                 'azim_err_lead': ['mean', 'sem', list],
                 'azim_err_lag': ['mean', 'sem', list],
             }), sep='_').reset_index()
@@ -1115,7 +1115,7 @@ def run_localization_experiments(
             'fn_eval': list,
             'ears': 'first'
         }).reset_index()
-        df_results = util_misc.flatten_columns(df_results, sep='_')
+        df_results = util.flatten_columns(df_results, sep='_')
         df_results = df_results.rename(columns={'azim_pred_arr_list': 'azim_pred_arr', 'elev_pred_arr_list': 'elev_pred_arr'})
         EXPERIMENT_DATAFRAMES[tag_experiment] = df_results.sort_index(axis=1)
     
@@ -1143,7 +1143,7 @@ def run_localization_experiments(
             df = df.groupby(['fn_eval', 'bandwidth']).agg({
                 'deg_azim_err': lambda _: np.sqrt(np.mean(np.square(_))),
             }).reset_index().rename(columns={'deg_azim_err': 'rms_error'})
-            df = util_misc.flatten_columns(df.groupby(['bandwidth']).agg({
+            df = util.flatten_columns(df.groupby(['bandwidth']).agg({
                 'rms_error': ['mean', 'sem', list],
             }).reset_index(), sep='_')
             df['tag_model'] = regex_dir_model        
@@ -1171,7 +1171,7 @@ def run_localization_experiments(
             df_results.append(df)
             print(f'Completed experiment `{tag_experiment}` for {len(list_dir_model)} `{regex_dir_model}` models')
         df_results = pd.concat(df_results).reset_index(drop=True)
-        df_results = util_misc.flatten_columns(df_results.groupby(
+        df_results = util.flatten_columns(df_results.groupby(
             ['tag_model', 'fn_eval', 'condition', 'cutoff']).agg(
             {'percent_correct': 'mean'}).reset_index().groupby(
             ['tag_model', 'condition', 'cutoff']).agg(
@@ -1201,7 +1201,7 @@ def run_localization_experiments(
         df_results = df_results.groupby(['tag_model', 'fn_eval', 'snr']).agg({
             key_metric: 'mean' for key_metric in list_key_metric
         }).reset_index()
-        df_results = util_misc.flatten_columns(df_results.groupby(['tag_model', 'snr']).agg({
+        df_results = util.flatten_columns(df_results.groupby(['tag_model', 'snr']).agg({
             key_metric: ['mean', 'sem', list] for key_metric in list_key_metric
         }).reset_index(), sep='_')
         df_results['snr'] = df_results['snr'].map(lambda _: np.round(_, decimals=1))
@@ -1231,7 +1231,7 @@ def run_localization_experiments(
         }).reset_index()
         dict_agg = {key_metric: ['mean', 'sem', list] for key_metric in list_key_metric}
         dict_agg['fn_eval'] = list
-        df_results = util_misc.flatten_columns(df_results.groupby(['tag_model', 'index_room', 'snr']).agg(dict_agg).reset_index(), sep='_')
+        df_results = util.flatten_columns(df_results.groupby(['tag_model', 'index_room', 'snr']).agg(dict_agg).reset_index(), sep='_')
         EXPERIMENT_DATAFRAMES[tag_experiment] = df_results.sort_index(axis=1)
     
     return EXPERIMENT_DATAFRAMES

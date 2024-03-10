@@ -11,7 +11,7 @@ import util_tfrecords
 
 ROOT_MOUNT_POINT = os.environ.get('ROOT_MOUNT_POINT', '')
 sys.path.append(ROOT_MOUNT_POINT + '/om2/user/msaddler/python-packages/msutil')
-import util_misc
+import util
 
 
 def process_example(example,
@@ -76,7 +76,7 @@ def write_output_dict_to_file(output_dict, filename):
     # Write output_dict to a JSON file
     print('[WRITING] evaluation output_dict to {}'.format(filename))
     with open(filename, 'w') as f:
-        json.dump(output_dict, f, sort_keys=True, cls=util_misc.NumpyEncoder)
+        json.dump(output_dict, f, sort_keys=True, cls=util.NumpyEncoder)
     print('[END] wrote evaluation output_dict to {}'.format(filename))
     return
 
