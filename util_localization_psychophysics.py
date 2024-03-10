@@ -10,9 +10,7 @@ import multiprocessing
 import scipy.stats
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
 
-sys.path.append('/om2/user/msaddler/python-packages/msutil')
 import util_misc
 
 
@@ -160,7 +158,7 @@ def fit_normcdf(xvals, yvals, mu=0.0, sigma=None):
     return np.squeeze(sigma_opt), np.squeeze(sigma_opt_cov)
 
 
-def fit_threshold(independent_variable, dependent_variable, threshold_value=0.707, verbose=False):
+def fit_threshold(independent_variable, dependent_variable, threshold_value=0.707):
     """
     """
     x = np.array(list(itertools.product(independent_variable, independent_variable)))
@@ -172,12 +170,6 @@ def fit_threshold(independent_variable, dependent_variable, threshold_value=0.70
     df = pd.DataFrame({'x': x, 'y': y}).groupby('x').agg({'y': 'mean'}).reset_index().sort_values(by='x')
     sigma_opt, _ = fit_normcdf(df.x.values, df.y.values, sigma=df.x.values)
     threshold = scipy.stats.norm(0, sigma_opt).ppf(threshold_value)
-    if verbose:
-        fig, ax = plt.subplots()
-        ax.plot(df.x.values, df.y.values, 'k.')
-        ax.plot(df.x.values, scipy.stats.norm(0, sigma_opt).cdf(df.x.values), 'r-')
-        ax.set_ylim([0, 1])
-        plt.show()
     return threshold
 
 
@@ -412,74 +404,6 @@ def experiment_itd_ild_weighting(
     return df
 
 
-def experiment_precedence_effect_click(
-        fn_eval=None,
-        fold=True,
-        prior=None,
-        func_label_to_azim_elev=label_to_azim_elev,
-        key_pred='label_loc_int:labels_pred',
-        key_true='label_loc_int:labels_true',
-        key_pred_prob='label_loc_int:probs_out',
-        verbose=True):
-    """
-    """
-    eval_dict = load_eval_dict(fn_eval)
-    if prior is not None:
-        label = probs_to_label(eval_dict[key_pred_prob], prior=prior)
-        changed = np.sum(np.logical_not(label == eval_dict[key_pred]))
-        if verbose:
-            print('Prior modified {} of {} predicted labels'.format(changed, label.shape[0]))
-        eval_dict[key_pred] = label
-    azim_true, elev_true = func_label_to_azim_elev(eval_dict[key_true])
-    azim_pred, elev_pred = func_label_to_azim_elev(eval_dict[key_pred])
-    azim_true_folded = fold_front_back(azim_true)
-    azim_pred_folded = fold_front_back(azim_pred)
-    if fold:
-        azim_true = azim_true_folded
-        azim_pred = azim_pred_folded
-    # Store all experiment-relevant data in a pandas dataframe
-    df_dict = {'azim_true': azim_true, 'azim_pred': azim_pred}
-    for k in eval_dict.keys():
-        if len(eval_dict[k].shape) == 1:
-            df_dict[k] = eval_dict[k]
-    n_classes = eval_dict[key_pred_prob].shape[1]
-    list_azim, list_elev = func_label_to_azim_elev(np.arange(0, n_classes))
-    IDX_ZERO_ELEV = list_elev == 0
-    probs_out = eval_dict[key_pred_prob][:, IDX_ZERO_ELEV]
-    for itr0 in range(probs_out.shape[1]):
-        df_dict['prob{:02d}'.format(itr0)] = probs_out[:, itr0]
-    list_azim = list_azim[IDX_ZERO_ELEV]
-    df = pd.DataFrame(df_dict)
-    df = df.set_index('index')
-    df = df.sort_index()
-    df = df[np.logical_and.reduce([
-        df['foreground_azimuth'] == 45,
-        df['foreground_elevation'] == 0,
-        df['lag_level'] == -10,
-        df['lead_level'] == -10,
-        df['ms_delay'] >= 0,
-    ])]
-    aggs_by_col = {'azim_true': np.mean, 'azim_pred': np.mean}
-    for k in df.columns:
-        if 'prob' in k:
-            aggs_by_col[k] = np.mean
-    df_im = df.groupby(['ms_delay']).agg(aggs_by_col).reset_index()
-    im = 0
-    im_x = df_im.index.values
-    im_y = list_azim
-    im = np.zeros([im_x.shape[0], probs_out.shape[1]])
-    for itr0 in range(probs_out.shape[1]):
-        im[:, itr0] = df_im['prob{:02d}'.format(itr0)].values
-        df = df.drop(columns=['prob{:02d}'.format(itr0)])
-    im_data = {
-        'im': im,
-        'im_x': im_x,
-        'im_y': im_y,
-    }
-    df['fn_eval'] = fn_eval
-    return df, im_data
-
-
 def experiment_minimum_audible_angle(
         fn_eval=None,
         func_label_to_azim_elev=None,
@@ -530,7 +454,7 @@ def experiment_minimum_audible_angle(
         
         df = df.apply(restrict_list, max_deg_diff=max_deg_diff, axis=1)
         df['maa'] = df.apply(
-            lambda _: float(fit_threshold(_.azim_true, _.azim_pred, verbose=False)),
+            lambda _: float(fit_threshold(_.azim_true, _.azim_pred)),
             axis=1)
         df['fn_eval'] = fn_eval
         df.to_pickle(fn_results)
@@ -584,7 +508,7 @@ def experiment_itd_threshold(
         
         df = df.apply(restrict_list, max_itd_diff=max_itd_diff, axis=1)
         df['itd_threshold'] = df.apply(
-            lambda _: float(fit_threshold(_.itd, _.azim_pred, verbose=False)),
+            lambda _: float(fit_threshold(_.itd, _.azim_pred)),
             axis=1)
         df['fn_eval'] = fn_eval
         df.to_pickle(fn_results)
@@ -915,15 +839,19 @@ def func_to_parallelize_speech_in_noise_in_reverb(
     return df
 
 
-def run_localization_experiments(list_regex_dir_model, list_expt=None, workers=20, **kwargs):
+def run_localization_experiments(
+        list_regex_dir_model,
+        list_expt=None,
+        workers=20,
+        dir_human_data='data/human/sound_localization',
+        **kwargs):
     """
     """
     EXPERIMENT_DATAFRAMES = {}
-    dir_human_data = '/om2/user/msaddler/tfauditoryutil/saved_models/HUMAN/localization/'
     
     tag_experiment = 'maa_azimuth'
     if (list_expt is None) or (tag_experiment in list_expt):
-        df_human = pd.read_csv(os.path.join(dir_human_data, 'human_data_mills_1958_minimum_audible_angle.csv'))
+        df_human = pd.read_csv(os.path.join(dir_human_data, 'mills_1958_minimum_audible_angle.csv'))
         df_human = df_human[df_human['f'] < 1e3]
         df_human['log_maa'] = np.log(df_human['maa'])
         df_human = util_misc.flatten_columns(df_human.rename(columns={
@@ -966,53 +894,9 @@ def run_localization_experiments(list_regex_dir_model, list_expt=None, workers=2
         df_results = pd.concat(df_results).reset_index(drop=True)
         EXPERIMENT_DATAFRAMES[tag_experiment] = df_results.sort_index(axis=1)
     
-    tag_experiment = 'maa_frequency'
-    if (list_expt is None) or (tag_experiment in list_expt):
-        df_human = pd.read_csv(os.path.join(dir_human_data, 'human_data_mills_1958_minimum_audible_angle.csv'))
-        df_human = df_human[df_human['azim'] == 0]
-        df_human['log_maa'] = np.log(df_human['maa'])
-        df_human = util_misc.flatten_columns(df_human.rename(columns={
-            'f': 'f_ref',
-            'azim': 'azim_ref',
-        }).groupby([
-            'f_ref',
-        ]).agg({
-            'maa': ['mean', 'sem', list],
-            'log_maa': ['mean', 'sem', list],
-        }), sep='_').reset_index()
-        df_human['tag_model'] = 'human'
-        df_results = [df_human]
-        for regex_dir_model in list_regex_dir_model:
-            list_dir_model = glob.glob(regex_dir_model)
-            with multiprocessing.Pool(min(workers, len(list_dir_model))) as p:
-                func = functools.partial(func_to_parallelize_minimum_audible_angle, **kwargs)
-                list_df = p.map(func, list_dir_model)
-            df = pd.concat(list_df)
-            df = df[df['azim_ref'] == 0]
-            df['maa'] = df['maa'].clip(0, 90)
-            df['log_maa'] = np.log(df['maa'].clip(0, 90))
-            df = df.groupby([
-                'fn_eval',
-                'f_ref',
-            ]).agg({
-                'maa': 'mean',
-                'log_maa': 'mean',
-            }).reset_index()  
-            df = util_misc.flatten_columns(df.groupby([
-                'f_ref',
-            ]).agg({
-                'maa': ['mean', 'sem', list],
-                'log_maa': ['mean', 'sem', list],
-            }), sep='_').reset_index()
-            df['tag_model'] = regex_dir_model
-            df_results.append(df)
-            print(f'Completed experiment `{tag_experiment}` for {len(list_dir_model)} `{regex_dir_model}` models')
-        df_results = pd.concat(df_results).reset_index(drop=True)
-        EXPERIMENT_DATAFRAMES[tag_experiment] = df_results.sort_index(axis=1)
-    
     tag_experiment = 'itd_threshold'
     if (list_expt is None) or (tag_experiment in list_expt):
-        df_human = pd.read_csv(os.path.join(dir_human_data, 'human_data_brughera_etal_2013_itd_threshold.csv'))
+        df_human = pd.read_csv(os.path.join(dir_human_data, 'brughera_etal_2013_itd_threshold.csv'))
         df_human = df_human.rename(columns={'subject': 'fn_eval'})
         df_human['log_itd_threshold'] = np.log(df_human['itd_threshold'])
         df_human = util_misc.flatten_columns(df_human.groupby('f').agg({
@@ -1046,7 +930,7 @@ def run_localization_experiments(list_regex_dir_model, list_expt=None, workers=2
     
     tag_experiment = 'itd_ild_weighting'
     if (list_expt is None) or (tag_experiment in list_expt):
-        df_human = pd.read_csv(os.path.join(dir_human_data, 'human_data_macpherson_middlebrooks_2002_itd_ild_weighting.csv'))
+        df_human = pd.read_csv(os.path.join(dir_human_data, 'macpherson_middlebrooks_2002_itd_ild_weighting.csv'))
         df_human = df_human.rename(columns={'subject': 'fn_eval'})
         list_df_human = []
         for bias in [-600, -300, 0, 300, 600]:
@@ -1095,7 +979,7 @@ def run_localization_experiments(list_regex_dir_model, list_expt=None, workers=2
             'deg_azim_err',
             'deg_elev_err',
         ]
-        df_human = pd.read_csv(os.path.join(dir_human_data, 'human_data_kulkarni_colburn_1998_spectral_smoothing.csv'))
+        df_human = pd.read_csv(os.path.join(dir_human_data, 'kulkarni_colburn_1998_spectral_smoothing.csv'))
         df_human = util_misc.flatten_columns(df_human.rename(columns={'subject': 'fn_eval'}).groupby(
             ['smoothed', 'fn_eval']).agg({'pct_correct': 'mean'}).reset_index().groupby('smoothed').agg({
             'pct_correct': ['mean', 'sem', list],
@@ -1126,7 +1010,7 @@ def run_localization_experiments(list_regex_dir_model, list_expt=None, workers=2
     
     tag_experiment = 'precedence_effect_localization'
     if (list_expt is None) or (tag_experiment in list_expt):
-        df_human = pd.read_csv(os.path.join(dir_human_data, 'human_data_litovsky_godar_2010_precedence_effect.csv'))
+        df_human = pd.read_csv(os.path.join(dir_human_data, 'litovsky_godar_2010_precedence_effect.csv'))
         df_lead = df_human[df_human.condition == 0].rename(columns={
             'rms_error_mean': 'azim_err_lead_mean',
             'rms_error_std': 'azim_err_lead_sem',
@@ -1176,7 +1060,7 @@ def run_localization_experiments(list_regex_dir_model, list_expt=None, workers=2
     
     tag_experiment = 'new_ears'
     if (list_expt is None) or (tag_experiment in list_expt):
-        df_human = pd.read_csv(os.path.join(dir_human_data, 'human_data_hofman_etal_1998_new_ears.csv'))
+        df_human = pd.read_csv(os.path.join(dir_human_data, 'hofman_etal_1998_new_ears.csv'))
         df_human = df_human.rename(columns={'subject': 'fn_eval'})
         df_human['new_ears'] = df_human['new_ears'].astype(bool)
         df_human.loc[df_human['new_ears'] == True, 'ears'] = 0
@@ -1237,7 +1121,7 @@ def run_localization_experiments(list_regex_dir_model, list_expt=None, workers=2
     
     tag_experiment = 'bandwidth_dependency'
     if (list_expt is None) or (tag_experiment in list_expt):
-        df_human = pd.read_csv(os.path.join(dir_human_data, 'human_data_yost_zhong_2014_bandwidth_dependency.csv'))
+        df_human = pd.read_csv(os.path.join(dir_human_data, 'yost_zhong_2014_bandwidth_dependency.csv'))
         list_f_ref = np.unique(df_human.cf)
         df_human = df_human.rename(columns={
             'cf': 'f_ref',
@@ -1270,7 +1154,7 @@ def run_localization_experiments(list_regex_dir_model, list_expt=None, workers=2
     
     tag_experiment = 'mp_spectral_cues'
     if (list_expt is None) or (tag_experiment in list_expt):
-        df_human = pd.read_csv(os.path.join(dir_human_data, 'human_data_hebrank_wright_1974_median_plane_spectral_cues.csv'))
+        df_human = pd.read_csv(os.path.join(dir_human_data, 'hebrank_wright_1974_median_plane_spectral_cues.csv'))
         df_human['condition'] = df_human['condition'].map({0: 'Low-pass', 1: 'High-pass'})
         df_human['cutoff'] = 1e3 * df_human['cutoff']
         df_human['percent_correct'] = df_human['pct_correct_15deg']
@@ -1296,7 +1180,7 @@ def run_localization_experiments(list_regex_dir_model, list_expt=None, workers=2
     
     tag_experiment = 'snr_dependency'
     if (list_expt is None) or (tag_experiment in list_expt):
-        df_human = pd.read_csv(os.path.join(dir_human_data, 'human_data_saddler_2023_snr.csv'))
+        df_human = pd.read_csv(os.path.join(dir_human_data, 'saddler_2023_snr.csv'))
         df_human['tag_model'] = 'human'
         df_results = [df_human]
         for regex_dir_model in list_regex_dir_model:
@@ -1384,11 +1268,6 @@ def compare_localization_experiment(
             list_key_y_human = ['maa']
             list_key_y_model = ['maa']
             interp = True
-        elif tag_expt == 'maa_frequency':
-            list_key_x = ['f_ref']
-            list_key_y_human = ['maa']
-            list_key_y_model = ['maa']
-            interp = False
         elif tag_expt == 'itd_threshold':
             list_key_x = ['f']
             list_key_y_human = ['log_itd_threshold']
