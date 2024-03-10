@@ -160,90 +160,6 @@ def tf_hilbert(x, axis=-1, dtype=tf.dtypes.complex64):
     return xa
 
 
-class rnn_biquad_digital_filter():
-    """
-    Tensorflow RNN cell implementing a digital biquad filter.
-    """
-    def __init__(self, b, a, dtype=tf.float32):
-        """
-        Initialize RNN cell for digital biquad filter
-        """
-        assert b.shape[0] == 3, "numerator coefs must have shape [3, N]"
-        assert a.shape[0] == 3, "denominator coefs must have shape [3, N]"
-        b0, b1, b2 = b.reshape([3, -1])
-        a0, a1, a2 = a.reshape([3, -1])
-        assert np.array_equal(a0, np.ones_like(a0)), "coefs must be normalized"
-        
-        N = a0.shape[0]
-        self.state_size = tf.TensorShape([3, N])
-        
-        A = np.zeros([3, 3, N])
-        A[0, 0, :] = -a1
-        A[0, 1, :] = 1
-        A[1, 0, :] = -a2
-        A[1, 2, :] = 1
-        self.A = tf.constant(A, dtype=dtype)
-        
-        K = np.zeros([1, 3, N])
-        K[0, 0, :] = 1
-        self.K = tf.constant(K, dtype=dtype)
-        
-        B = np.zeros([3, 1, N])
-        B[0, 0, :] = b0
-        B[1, 0, :] = b1
-        B[2, 0, :] = b2
-        self.B = tf.constant(B, dtype=dtype)
-    
-    def get_initial_state(self, inputs=None, batch_size=None, dtype=None):
-        """
-        Define initial state of filter: zeros with shape [batch, 3, N]
-        """
-        if inputs is not None:
-            batch_size = tf.shape(inputs)[0]
-            dtype = inputs.dtype
-        if batch_size is None or dtype is None:
-            raise ValueError(
-                "batch_size and dtype cannot be None while constructing initial state: "
-                "batch_size={}, dtype={}".format(batch_size, dtype))
-        initial_state = tf.zeros([batch_size] + self.state_size.as_list(), dtype=dtype)
-        return initial_state
-    
-    def call(self, x, w):
-        """
-        Parallelized implementation of direct form II digital biquad filter
-        difference equation (RNN state vector stores w[n], w[n-1], w[n-2]):
-            w[n] = x[n] - (a1 * w[n-1]) - (a2 * w[n-2])
-            y[n] = (b0 * w[n]) + (b1 * w[n-1]) + (b2 * w[n-2])
-        """
-        w_next = tf.math.add(
-            tf.transpose(
-                tf.linalg.matmul(
-                    tf.transpose(w[0], perm=[2, 0, 1]),
-                    tf.transpose(self.A, perm=[2, 0, 1])
-                ),
-                perm=[1, 2, 0]
-            ),
-            tf.transpose(
-                tf.linalg.matmul(
-                    tf.transpose(x[:, tf.newaxis, :], perm=[2, 0, 1]),
-                    tf.transpose(self.K, perm=[2, 0, 1])
-                ),
-                perm=[1, 2, 0]
-            )
-        )
-        y = tf.squeeze(
-            tf.transpose(
-                tf.linalg.matmul(
-                    tf.transpose(self.B, perm=[2, 1, 0]),
-                    tf.transpose(w_next, perm=[2, 1, 0])
-                ),
-                perm=[2, 1, 0]
-            ),
-            axis=1
-        )
-        return (y, w_next)
-
-
 def get_gammatone_filter_coefs(sr,
                                cfs,
                                EarQ=9.2644,
@@ -326,43 +242,6 @@ def scipy_gammatone_filterbank(x, filter_coefs):
     if len(x.shape) == 1:
         x_subbands = x_subbands[0]
     return x_subbands
-
-
-def rnn_gammatone_filterbank(x,
-                             sr,
-                             cfs=None,
-                             min_cf=125.0,
-                             max_cf=8e3,
-                             num_cf=50,
-                             kwargs_filter_coefs={},
-                             dtype=tf.float32):
-    """
-    """
-    if len(x.shape) == 1:
-        x = x[tf.newaxis, :, tf.newaxis]
-    elif len(x.shape) == 2:
-        x = x[:, :, tf.newaxis]
-    elif len(x.shape) > 3:
-        raise ValueError("Input dimensions should be: [batch, time, channels]")
-    if cfs is None:
-        cfs = erbspace(min_cf, max_cf, num_cf)
-    filter_coefs = get_gammatone_filter_coefs(sr, cfs, **kwargs_filter_coefs)
-    list_rnn_cells = [rnn_biquad_digital_filter(**fc) for fc in filter_coefs]
-    gammatone_rnn_layer = tf.keras.layers.RNN(
-        list_rnn_cells,
-        return_sequences=True,
-        return_state=False,
-        go_backwards=False,
-        stateful=False,
-        unroll=False,
-        time_major=False,
-        dtype=dtype)
-    y = gammatone_rnn_layer(x)
-    container = {
-        'sr': sr,
-        'cfs': cfs,
-    }
-    return y, container
 
 
 def get_gammatone_impulse_responses(sr,

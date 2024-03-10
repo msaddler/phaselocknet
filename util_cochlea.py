@@ -7,8 +7,6 @@ import tensorflow_probability as tfp
 
 import util_signal
 
-ROOT_MOUNT_POINT = os.environ.get('ROOT_MOUNT_POINT', '')
-
 
 def cochlea(tensor_input,
             sr_input=20e3,
@@ -49,19 +47,6 @@ def cochlea(tensor_input,
     if filterbank_mode is None:
         assert not config_filterbank, "filterbank_mode must be specified in config_filterbank"
         assert len(tensor_input.shape) >= 3, "shape must be [batch, time, freq, (channel)] to skip filterbank"
-    elif filterbank_mode == 'connear':
-        _, connear_model = connear(
-            model(tensor_input),
-            sr_cochlea,
-            **config_filterbank)
-        connear_model._name = 'filterbank_connear'
-        model.add(connear_model)
-    elif filterbank_mode == 'rnn_gammatone_filterbank':
-        lambda_filterbank = lambda x: util_signal.rnn_gammatone_filterbank(
-            x,
-            sr_cochlea,
-            **config_filterbank)[0]
-        model.add(tf.keras.layers.Lambda(lambda_filterbank, dtype=dtype, name='filterbank'))
     elif filterbank_mode == 'fir_gammatone_filterbank':
         filterbank_io_function = util_signal.fir_gammatone_filterbank(
             model(tensor_input),
@@ -172,138 +157,6 @@ def cochlea(tensor_input,
     if tensor_input is not None:
         tensor_output = model(tensor_input)
     return tensor_output, model
-
-
-def connear(tensor_input,
-            sr_input=20e3,
-            sr_strict=True,
-            fn_connear_model='/om2/user/msaddler/python-packages/CoNNear_cochlea/connear/Gmodel.json',
-            fn_connear_weights='/om2/user/msaddler/python-packages/CoNNear_cochlea/connear/Gmodel.h5',
-            fn_connear_cfs='/om2/user/msaddler/python-packages/CoNNear_cochlea/tlmodel/cf.txt',
-            cfs_spec=[1,-1,2],
-            pad_crop=256,
-            frame_size=16,
-            trainable=False,
-            load_weights=True):
-    """
-    Wrapper function for interacting with CoNNear peripheral auditory model
-    (https://github.com/HearingTechnology/CoNNear_cochlea).
-    
-    Args
-    ----
-    tensor_input (tensor): input audio tensor with shape [batch, time]
-    sr_input (int): audio sampling rate in Hz (CoNNear expects 20000 Hz)
-    sr_strict (bool): if True, a value error will be raised if sr_input is not 20000 Hz
-    fn_connear_model (str): JSON filename specifying CoNNear keras model architecture
-    fn_connear_weights (str): filename specifying CoNNear keras model pre-trained weights
-    fn_connear_cfs (str): filename specifying list of CFs for pre-trained CoNNear model
-    cfs_spec (np.array): specifies which CFs to keep in output representation
-    pad_crop (int): number of silent samples (20000 Hz sampling rate) added to each end
-        of audio to offset CoNNear context cropping
-    frame_size (int): CoNNear frame size (audio passed into CoNNear graph is silent-
-        padded to have length equal to an integer multiple of frame_size)
-    trainable (bool): If True, CoNNear model weights are trainable
-    load_weights (bool): if True, CoNNear model weights are loaded from fn_connear_weights
-    
-    Returns
-    -------
-    tensor_output (tensor): output tensor of CoNNear with shape [batch, freq, time]
-    connear_model (keras.Model): CoNNNear model object
-    """
-    # Check if audio sampling rate matches expected 20 kHz
-    if not sr_input == 20e3:
-        if sr_strict:
-            raise ValueError("CoNNear operates on audio with sampling rate 20000 Hz")
-        else:
-            print("[connear] operating CoNNear on {} Hz audio".format(sr_input))
-    
-    # Initialize sequential keras model for CoNNear pre/post processing stages 
-    connear_model = tf.keras.Sequential()
-    
-    # Reshape audio input to fit CoNNear graph [batch, time, 1]
-    batch_size = tensor_input.shape[0]
-    input_shape = tensor_input.shape[1:]
-    layer_reshape = tf.keras.layers.Reshape(
-        (-1, 1),
-        input_shape=input_shape,
-        batch_size=batch_size,
-        name='reshape_audio_to_batch_time_1')
-    connear_model.add(layer_reshape)
-    
-    # Pad input time dimension to offset CoNNear context cropping and fit frame size
-    N = int(np.ceil((tensor_input.shape[1] + (2 * pad_crop)) / frame_size) * frame_size)
-    pad_frame = N - tensor_input.shape[1] - (2 * pad_crop)
-    layer_pad = tf.keras.layers.ZeroPadding1D(
-        padding=(pad_crop, pad_crop + pad_frame),
-        name='zero_padding_in_time')
-    connear_model.add(layer_pad)
-    
-    # Load CoNNear graph as keras model from JSON and insert as layer
-    with open(ROOT_MOUNT_POINT + fn_connear_model, 'r') as f_connear_model:
-        layer_connear = tf.keras.models.model_from_json(f_connear_model.read())
-        layer_connear._name = 'connear_model_from_json'
-    layer_connear.trainable = trainable
-    if load_weights:
-        layer_connear.load_weights(ROOT_MOUNT_POINT + fn_connear_weights)
-        print('[connear] loaded CoNNear weights from: {}'.format(fn_connear_weights))
-    connear_model.add(layer_connear)
-    
-    # Rearrange CoNNear output dimensions to [batch, cf, time]
-    layer_transpose = tf.keras.layers.Permute(dims=[2, 1], name='transpose_to_batch_cf_time')
-    connear_model.add(layer_transpose)
-    
-    # Load list of CoNNear CFs; slice and re-order as specified
-    cfs = np.loadtxt(ROOT_MOUNT_POINT + fn_connear_cfs) * 1e3
-    if cfs_spec is not None:
-        cfs_spec = np.array(cfs_spec)
-        assert len(cfs_spec.shape) == 1, "cfs_spec must be a 1D array"
-        if cfs_spec.dtype == int:
-            cfs_mode = 'slice (start, stop, step) applied to CoNNear CFs'
-            cfs_mask = np.zeros_like(cfs).astype(np.bool)
-            cfs_mask[slice(*cfs_spec)] = True
-        else:
-            cfs_mode = 'list of accepted CoNNear CFs'
-            cfs_mask = [np.isclose(np.abs(cf-cfs_spec).min(), 0) for cf in cfs]
-            cfs_mask = np.array(cfs_mask, dtype=np.bool)
-        print('[connear] interpreting `cfs_spec` as {} ({} of {} CFs)'.format(
-            cfs_mode, cfs_mask.sum(), cfs_mask.shape[0]))
-        cfs = cfs[cfs_mask]
-        layer_slice = tf.keras.layers.Lambda(
-            lambda x: tf.boolean_mask(x, cfs_mask, axis=1),
-            name='slice_cfs')
-        connear_model.add(layer_slice)
-    if (len(cfs) > 1) and (cfs[0] > cfs[1]):
-        print('[connear] re-ordering CF list to be in ascending order')
-        cfs = np.flip(cfs)
-        layer_reverse = tf.keras.layers.Lambda(
-            lambda x: tf.reverse(x, axis=[1]),
-            name='reverse_cfs')
-        connear_model.add(layer_reverse)
-    # Set static shape of CoNNear output and truncate silent padding
-    layer_static_shape = tf.keras.layers.Reshape(
-        (cfs.shape[0], input_shape[0] + pad_frame),
-        name='set_static_shape')
-    connear_model.add(layer_static_shape)
-    if pad_frame > 0:
-        layer_pad_remove = tf.keras.layers.Lambda(
-            lambda x: x[:, :, :-pad_frame],
-            name='remove_zero_padding_in_time')
-        connear_model.add(layer_pad_remove)
-    return connear_model(tensor_input), connear_model
-
-
-def subsample_and_reduce_sum(tensor_input, axis=1, n_subsample=20, keepdims=False):
-    """
-    """
-    tensor_output = tensor_input
-    if n_subsample is not None:
-        msg = "n_subsample must be <= to {}".format(tensor_input.shape[axis])
-        assert n_subsample <= tensor_input.shape[axis], msg
-        axis_indices = tf.range(tensor_input.shape[axis])
-        subsampled_indices = tf.random.shuffle(axis_indices)[:n_subsample]
-        tensor_output = tf.gather(tensor_output, subsampled_indices, axis=axis)
-    tensor_output = tf.math.reduce_sum(tensor_output, axis=axis, keepdims=keepdims)
-    return tensor_output
 
 
 def custom_slice(x, axis=-1, args=None, expand_dims=True):
