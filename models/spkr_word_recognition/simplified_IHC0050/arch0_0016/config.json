@@ -1,0 +1,114 @@
+{
+    "kwargs_cochlea": {
+        "config_filterbank": {
+            "cfs": null,
+            "fir_dur": 0.05,
+            "kwargs_filter_coefs": {},
+            "max_cf": 8000.0,
+            "min_cf": 60.0,
+            "mode": "fir_gammatone_filterbank",
+            "num_cf": 50
+        },
+        "config_subband_processing": {
+            "rectify": true
+        },
+        "kwargs_custom_slice": {},
+        "kwargs_fir_lowpass_filter_input": {},
+        "kwargs_fir_lowpass_filter_output": {
+            "cutoff": 50,
+            "fir_dur": 0.05,
+            "ihc_filter": true,
+            "order": 7
+        },
+        "kwargs_sigmoid_rate_level_function": {
+            "dynamic_range": [
+                20.0,
+                40.0,
+                80.0
+            ],
+            "dynamic_range_interval": 0.95,
+            "envelope_mode": true,
+            "rate_max": [
+                250.0,
+                250.0,
+                250.0
+            ],
+            "rate_spont": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "threshold": [
+                0.0,
+                12.0,
+                28.0
+            ]
+        },
+        "kwargs_spike_generator_binomial": {
+            "mode": "approx",
+            "n_per_channel": [
+                384,
+                160,
+                96
+            ]
+        },
+        "kwargs_spike_rate_noise": {},
+        "sr_cochlea": 20000.0,
+        "sr_input": 20000.0,
+        "sr_output": 10000.0
+    },
+    "kwargs_dataset_from_tfrecords": {
+        "buffer_size_prefetch": 5,
+        "buffer_size_shuffle": 100,
+        "bytes_description": "config_bytes_description.pckl",
+        "densify_downsample_factors": null,
+        "densify_jitter_indices": null,
+        "feature_description": "config_feature_description.pckl",
+        "features_to_exclude": [
+            "nervegram_meanrates"
+        ]
+    },
+    "kwargs_optimize": {
+        "basename_ckpt_best": "ckpt_BEST",
+        "basename_ckpt_epoch": null,
+        "basename_log": "log_optimize.csv",
+        "batch_size": 32,
+        "early_stopping_baseline": null,
+        "early_stopping_min_delta": 0,
+        "early_stopping_patience": null,
+        "epochs": 40,
+        "key_inputs": "signal",
+        "key_outputs": [
+            "label_speaker_int",
+            "label_word_int"
+        ],
+        "kwargs_loss": {
+            "label_speaker_int": {
+                "from_logits": true,
+                "name": "SparseCategoricalCrossentropy",
+                "weight": 1.0
+            },
+            "label_word_int": {
+                "from_logits": true,
+                "name": "SparseCategoricalCrossentropy",
+                "weight": 1.0
+            }
+        },
+        "kwargs_optimizer": {
+            "amsgrad": false,
+            "beta_1": 0.9,
+            "beta_2": 0.999,
+            "epsilon": 1e-07,
+            "learning_rate": 1e-05,
+            "name": "Adam"
+        },
+        "monitor_metric": "val_loss",
+        "monitor_mode": "min",
+        "steps_per_epoch": 10000,
+        "validation_steps": 500
+    },
+    "n_classes_dict": {
+        "label_speaker_int": 433,
+        "label_word_int": 794
+    }
+}

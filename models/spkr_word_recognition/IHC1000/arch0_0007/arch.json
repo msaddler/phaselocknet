@@ -1,0 +1,433 @@
+[
+    {
+        "args": {
+            "name": "input_reshape",
+            "target_shape": [
+                50,
+                20000,
+                -1
+            ]
+        },
+        "layer_type": "reshape"
+    },
+    {
+        "args": {
+            "axis": [
+                1,
+                2,
+                3
+            ],
+            "center": false,
+            "name": "input_norm",
+            "scale": false
+        },
+        "layer_type": "tf.keras.layers.LayerNormalization"
+    },
+    {
+        "args": {
+            "activation": null,
+            "dilation_rate": [
+                1,
+                1
+            ],
+            "filters": 32,
+            "kernel_size": [
+                2,
+                42
+            ],
+            "name": "block0_conv",
+            "padding": "VALID_TIME",
+            "strides": [
+                1,
+                1
+            ]
+        },
+        "layer_type": "tf.layers.conv2d"
+    },
+    {
+        "args": {
+            "name": "block0_relu"
+        },
+        "layer_type": "tf.nn.relu"
+    },
+    {
+        "args": {
+            "name": "block0_pool",
+            "padding": "VALID_TIME",
+            "pool_size": [
+                8,
+                16
+            ],
+            "sqrt_window": true,
+            "strides": [
+                2,
+                4
+            ]
+        },
+        "layer_type": "hpool"
+    },
+    {
+        "args": {
+            "axis": -1,
+            "center": true,
+            "name": "block0_norm",
+            "scale": true
+        },
+        "layer_type": "tf.keras.layers.LayerNormalization"
+    },
+    {
+        "args": {
+            "activation": null,
+            "dilation_rate": [
+                1,
+                1
+            ],
+            "filters": 64,
+            "kernel_size": [
+                2,
+                18
+            ],
+            "name": "block1_conv",
+            "padding": "VALID_TIME",
+            "strides": [
+                1,
+                1
+            ]
+        },
+        "layer_type": "tf.layers.conv2d"
+    },
+    {
+        "args": {
+            "name": "block1_relu"
+        },
+        "layer_type": "tf.nn.relu"
+    },
+    {
+        "args": {
+            "name": "block1_pool",
+            "padding": "VALID_TIME",
+            "pool_size": [
+                8,
+                16
+            ],
+            "sqrt_window": true,
+            "strides": [
+                2,
+                4
+            ]
+        },
+        "layer_type": "hpool"
+    },
+    {
+        "args": {
+            "axis": -1,
+            "center": true,
+            "name": "block1_norm",
+            "scale": true
+        },
+        "layer_type": "tf.keras.layers.LayerNormalization"
+    },
+    {
+        "args": {
+            "activation": null,
+            "dilation_rate": [
+                1,
+                1
+            ],
+            "filters": 128,
+            "kernel_size": [
+                6,
+                6
+            ],
+            "name": "block2_conv",
+            "padding": "VALID_TIME",
+            "strides": [
+                1,
+                1
+            ]
+        },
+        "layer_type": "tf.layers.conv2d"
+    },
+    {
+        "args": {
+            "name": "block2_relu"
+        },
+        "layer_type": "tf.nn.relu"
+    },
+    {
+        "args": {
+            "name": "block2_pool",
+            "padding": "VALID_TIME",
+            "pool_size": [
+                1,
+                16
+            ],
+            "sqrt_window": true,
+            "strides": [
+                1,
+                4
+            ]
+        },
+        "layer_type": "hpool"
+    },
+    {
+        "args": {
+            "axis": -1,
+            "center": true,
+            "name": "block2_norm",
+            "scale": true
+        },
+        "layer_type": "tf.keras.layers.LayerNormalization"
+    },
+    {
+        "args": {
+            "activation": null,
+            "dilation_rate": [
+                1,
+                1
+            ],
+            "filters": 256,
+            "kernel_size": [
+                3,
+                12
+            ],
+            "name": "block3_conv",
+            "padding": "VALID_TIME",
+            "strides": [
+                1,
+                1
+            ]
+        },
+        "layer_type": "tf.layers.conv2d"
+    },
+    {
+        "args": {
+            "name": "block3_relu"
+        },
+        "layer_type": "tf.nn.relu"
+    },
+    {
+        "args": {
+            "name": "block3_pool",
+            "padding": "VALID_TIME",
+            "pool_size": [
+                1,
+                16
+            ],
+            "sqrt_window": true,
+            "strides": [
+                1,
+                4
+            ]
+        },
+        "layer_type": "hpool"
+    },
+    {
+        "args": {
+            "axis": -1,
+            "center": true,
+            "name": "block3_norm",
+            "scale": true
+        },
+        "layer_type": "tf.keras.layers.LayerNormalization"
+    },
+    {
+        "args": {
+            "activation": null,
+            "dilation_rate": [
+                1,
+                1
+            ],
+            "filters": 512,
+            "kernel_size": [
+                8,
+                8
+            ],
+            "name": "block4_conv",
+            "padding": "VALID_TIME",
+            "strides": [
+                1,
+                1
+            ]
+        },
+        "layer_type": "tf.layers.conv2d"
+    },
+    {
+        "args": {
+            "name": "block4_relu"
+        },
+        "layer_type": "tf.nn.relu"
+    },
+    {
+        "args": {
+            "name": "block4_pool",
+            "padding": "VALID_TIME",
+            "pool_size": [
+                1,
+                1
+            ],
+            "sqrt_window": true,
+            "strides": [
+                1,
+                1
+            ]
+        },
+        "layer_type": "hpool"
+    },
+    {
+        "args": {
+            "axis": -1,
+            "center": true,
+            "name": "block4_norm",
+            "scale": true
+        },
+        "layer_type": "tf.keras.layers.LayerNormalization"
+    },
+    {
+        "args": {
+            "activation": null,
+            "dilation_rate": [
+                1,
+                1
+            ],
+            "filters": 512,
+            "kernel_size": [
+                6,
+                6
+            ],
+            "name": "block5_conv",
+            "padding": "VALID_TIME",
+            "strides": [
+                1,
+                1
+            ]
+        },
+        "layer_type": "tf.layers.conv2d"
+    },
+    {
+        "args": {
+            "name": "block5_relu"
+        },
+        "layer_type": "tf.nn.relu"
+    },
+    {
+        "args": {
+            "name": "block5_pool",
+            "padding": "VALID_TIME",
+            "pool_size": [
+                1,
+                1
+            ],
+            "sqrt_window": true,
+            "strides": [
+                1,
+                1
+            ]
+        },
+        "layer_type": "hpool"
+    },
+    {
+        "args": {
+            "axis": -1,
+            "center": true,
+            "name": "block5_norm",
+            "scale": true
+        },
+        "layer_type": "tf.keras.layers.LayerNormalization"
+    },
+    {
+        "args": {
+            "activation": null,
+            "dilation_rate": [
+                1,
+                1
+            ],
+            "filters": 512,
+            "kernel_size": [
+                8,
+                8
+            ],
+            "name": "block6_conv",
+            "padding": "VALID_TIME",
+            "strides": [
+                1,
+                1
+            ]
+        },
+        "layer_type": "tf.layers.conv2d"
+    },
+    {
+        "args": {
+            "name": "block6_relu"
+        },
+        "layer_type": "tf.nn.relu"
+    },
+    {
+        "args": {
+            "name": "block6_pool",
+            "padding": "VALID_TIME",
+            "pool_size": [
+                8,
+                16
+            ],
+            "sqrt_window": true,
+            "strides": [
+                2,
+                4
+            ]
+        },
+        "layer_type": "hpool"
+    },
+    {
+        "args": {
+            "axis": -1,
+            "center": true,
+            "name": "block6_norm",
+            "scale": true
+        },
+        "layer_type": "tf.keras.layers.LayerNormalization"
+    },
+    {
+        "args": {
+            "name": "fc_flatten"
+        },
+        "layer_type": "tf.layers.flatten"
+    },
+    {
+        "args": {
+            "activation": null,
+            "name": "fc_intermediate_dense",
+            "units": 512
+        },
+        "layer_type": "tf.layers.dense"
+    },
+    {
+        "args": {
+            "name": "fc_intermediate_relu"
+        },
+        "layer_type": "tf.nn.relu"
+    },
+    {
+        "args": {
+            "axis": -1,
+            "center": true,
+            "name": "fc_intermediate_norm",
+            "scale": true
+        },
+        "layer_type": "tf.keras.layers.LayerNormalization"
+    },
+    {
+        "args": {
+            "name": "fc_dropout",
+            "rate": 0.5
+        },
+        "layer_type": "tf.layers.dropout"
+    },
+    {
+        "args": {
+            "activation": null,
+            "name": "fc_top"
+        },
+        "layer_type": "multi_fc_top_classification"
+    }
+]

@@ -1,0 +1,82 @@
+{
+    "kwargs_cochlea": {
+        "kwargs_custom_slice": {
+            "args": [
+                0,
+                3
+            ],
+            "axis": 3,
+            "expand_dims": true
+        },
+        "kwargs_spike_generator_binomial": {
+            "n_per_channel": [
+                384,
+                160,
+                96
+            ],
+            "n_per_step": [
+                48,
+                40,
+                48
+            ]
+        },
+        "kwargs_spike_rate_noise": {},
+        "sr_cochlea": 10000.0,
+        "sr_input": 10000.0,
+        "sr_output": 10000.0
+    },
+    "kwargs_dataset_from_tfrecords": {
+        "buffer_size_prefetch": 5,
+        "buffer_size_shuffle": 100,
+        "bytes_description": "config_bytes_description.pckl",
+        "densify_downsample_factors": null,
+        "densify_jitter_indices": null,
+        "feature_description": "config_feature_description.pckl",
+        "features_to_exclude": [
+            "signal"
+        ]
+    },
+    "kwargs_optimize": {
+        "basename_ckpt_best": "ckpt_BEST",
+        "basename_ckpt_epoch": null,
+        "basename_log": "log_optimize.csv",
+        "batch_size": 32,
+        "early_stopping_baseline": null,
+        "early_stopping_min_delta": 0,
+        "early_stopping_patience": null,
+        "epochs": 40,
+        "key_inputs": "nervegram_meanrates",
+        "key_outputs": [
+            "label_speaker_int",
+            "label_word_int"
+        ],
+        "kwargs_loss": {
+            "label_speaker_int": {
+                "from_logits": true,
+                "name": "SparseCategoricalCrossentropy",
+                "weight": 1.0
+            },
+            "label_word_int": {
+                "from_logits": true,
+                "name": "SparseCategoricalCrossentropy",
+                "weight": 1.0
+            }
+        },
+        "kwargs_optimizer": {
+            "amsgrad": false,
+            "beta_1": 0.9,
+            "beta_2": 0.999,
+            "epsilon": 1e-07,
+            "learning_rate": 1e-05,
+            "name": "Adam"
+        },
+        "monitor_metric": "val_loss",
+        "monitor_mode": "min",
+        "steps_per_epoch": 10000,
+        "validation_steps": 500
+    },
+    "n_classes_dict": {
+        "label_speaker_int": 433,
+        "label_word_int": 794
+    }
+}
