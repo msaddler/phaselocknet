@@ -175,20 +175,20 @@ def write_config(dir_dst,
     """
     CONFIG = copy.deepcopy(CONFIG)
     fn_json = os.path.join(dir_dst, '{}.json'.format(prefix_config))
-    fn_pckl_feature_description = os.path.join(dir_dst, '{}.pckl'.format(prefix_feature))
-    fn_pckl_bytes_description = os.path.join(dir_dst, '{}.pckl'.format(prefix_bytes))
+    fn_pkl_feature_description = os.path.join(dir_dst, '{}.pkl'.format(prefix_feature))
+    fn_pkl_bytes_description = os.path.join(dir_dst, '{}.pkl'.format(prefix_bytes))
     feature_description = copy.deepcopy(CONFIG.get('feature_description', None))
     bytes_description = copy.deepcopy(CONFIG.get('bytes_description', None))
     if isinstance(feature_description, dict):
-        CONFIG['feature_description'] = os.path.basename(fn_pckl_feature_description)
-        with open(fn_pckl_feature_description, 'wb') as f_handle:
+        CONFIG['feature_description'] = os.path.basename(fn_pkl_feature_description)
+        with open(fn_pkl_feature_description, 'wb') as f_handle:
             pickle.dump(feature_description, f_handle)
-            print('[WROTE CONFIG] {}'.format(fn_pckl_feature_description))
+            print('[WROTE CONFIG] {}'.format(fn_pkl_feature_description))
     if isinstance(bytes_description, dict):
-        CONFIG['bytes_description'] = os.path.basename(fn_pckl_bytes_description)
-        with open(fn_pckl_bytes_description, 'wb') as f_handle:
+        CONFIG['bytes_description'] = os.path.basename(fn_pkl_bytes_description)
+        with open(fn_pkl_bytes_description, 'wb') as f_handle:
             pickle.dump(bytes_description, f_handle)
-            print('[WROTE CONFIG] {}'.format(fn_pckl_bytes_description))
+            print('[WROTE CONFIG] {}'.format(fn_pkl_bytes_description))
     with open(fn_json, 'w') as f_handle:
         json.dump(CONFIG, f_handle, indent=4, sort_keys=True, cls=util.NumpyEncoder)
         print('[WROTE CONFIG] {}'.format(fn_json))
@@ -206,19 +206,19 @@ def load_config(dir_dst,
     feature_description = CONFIG.get('feature_description', None)
     bytes_description = CONFIG.get('bytes_description', None)
     if isinstance(feature_description, str):
-        fn_pckl_feature_description = feature_description
-        if os.path.basename(fn_pckl_feature_description) == fn_pckl_feature_description:
-            fn_pckl_feature_description = os.path.join(dir_dst, fn_pckl_feature_description)
-        with open(fn_pckl_feature_description, 'rb') as f_handle:
+        fn_pkl_feature_description = feature_description
+        if os.path.basename(fn_pkl_feature_description) == fn_pkl_feature_description:
+            fn_pkl_feature_description = os.path.join(dir_dst, fn_pkl_feature_description)
+        with open(fn_pkl_feature_description, 'rb') as f_handle:
             CONFIG['feature_description'] = pickle.load(f_handle)
-            print('[LOADED CONFIG] {}'.format(fn_pckl_feature_description))
+            print('[LOADED CONFIG] {}'.format(fn_pkl_feature_description))
     if isinstance(bytes_description, str):
-        fn_pckl_bytes_description = bytes_description
-        if os.path.basename(fn_pckl_bytes_description) == fn_pckl_bytes_description:
-            fn_pckl_bytes_description = os.path.join(dir_dst, fn_pckl_bytes_description)
-        with open(fn_pckl_bytes_description, 'rb') as f_handle:
+        fn_pkl_bytes_description = bytes_description
+        if os.path.basename(fn_pkl_bytes_description) == fn_pkl_bytes_description:
+            fn_pkl_bytes_description = os.path.join(dir_dst, fn_pkl_bytes_description)
+        with open(fn_pkl_bytes_description, 'rb') as f_handle:
             CONFIG['bytes_description'] = pickle.load(f_handle)
-            print('[LOADED CONFIG] {}'.format(fn_pckl_bytes_description))
+            print('[LOADED CONFIG] {}'.format(fn_pkl_bytes_description))
     return CONFIG
 
 
