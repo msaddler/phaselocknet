@@ -249,3 +249,23 @@ def flatten_columns(df, sep='/'):
     df.columns = [col[0] if (len(col[0]) == 0) or (len(col[1]) == 0) else sep.join(col)
                   for col in df.columns.to_flat_index()]
     return df
+
+
+def vector_strength(spikes, t_spikes, frequency):
+    """
+    Args
+    ----
+    spikes (np.ndarray): timeseries of spike counts
+    t_spikes (np.ndarray): timestamps for `spikes`
+    frequency (float): stimulus frequency in Hz
+    
+    Returns
+    -------
+    vs (float): vector strength between 0 and 1
+        quantifying periodicity in the spikes
+    """
+    phase = 2 * np.pi * t_spikes * frequency
+    x = np.sum(spikes * np.cos(phase))
+    y = np.sum(spikes * np.sin(phase))
+    vs = np.sqrt(np.square(x) + np.square(y)) / np.sum(spikes)
+    return vs
