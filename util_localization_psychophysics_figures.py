@@ -653,7 +653,7 @@ def make_plot_snr_dependency(
         'xticks': [-13.6, -6.8, 0, 6.8, 13.6],
         'xticklabels': [-13.6, -6.8, 0, 6.8, 13.6],
     }
-    kwargs_format_axes.update(dict_key_metric[key_metric])
+    kwargs_format_axes.update(dict_key_metric.get(key_metric, {}))
     kwargs_format_axes.update(kwargs_format_axes_update)
     ax = util_figures.format_axes(ax, **kwargs_format_axes)
     return ax
