@@ -6,7 +6,7 @@ This is a repository of Python (3.11.4) code. A complete list of Python dependen
 
 ## Sound Datasets and Model Weights
 
-Sound datasets, model weights, and raw model evaluation outputs for each model configuration are too large to include here, but can be downloaded from our [Google Drive](https://drive.google.com/drive/folders/1YgC7x6Ot84XZInlSyHK-9NQ0jhhGUS2z?usp=share_link). The file structure of the Google Drive (which mirrors this repository) should be preserved for code to run without altering file paths.
+Sound datasets, trained model weights, and raw model evaluation outputs for each model configuration are too large to include here, but can be downloaded from our [Google Drive](https://drive.google.com/drive/folders/1YgC7x6Ot84XZInlSyHK-9NQ0jhhGUS2z?usp=share_link). The file structure of the Google Drive (which mirrors this repository) should be preserved for code to run without altering file paths.
 
 To run models with the detailed auditory nerve input representation, simulated auditory nerve representations need to be pre-computed. Code for this is provided; however, it is computationally expensive and requires considerable disk space. For each auditory nerve model configuration, the sound localization training dataset requires 12 TB and the word/voice recognition training dataset requires 26 TB. For most purposes, we recommend using the "simplified" models, which include a simpler auditory nerve model as part of the `tensorflow` computation graph such that the model can operate directly on sound waveforms.
 
@@ -14,7 +14,7 @@ To run models with the detailed auditory nerve input representation, simulated a
 
 The [`model_DEMO.ipynb`](model_DEMO.ipynb) Jupyter Notebook provides minimal examples of how to use our trained models.
 
-Code for training and evaluating the models at scale can be found in [`phaselocknet_run.py`](phaselocknet_run.py), which is called in the example SLURM scripts provided ([`phaselocknet_localization_train.sh`](phaselocknet_localization_train.sh), [`phaselocknet_localization_eval.sh`](phaselocknet_localization_eval.sh), [`phaselocknet_spkr_word_train.sh`](phaselocknet_spkr_word_train.sh), [`phaselocknet_localization_eval.sh`](phaselocknet_localization_eval.sh)).
+Code for training and evaluating the models at scale can be found in [`phaselocknet_run.py`](phaselocknet_run.py), which is called in the example SLURM scripts provided ([`phaselocknet_localization_train.sh`](phaselocknet_localization_train.sh), [`phaselocknet_localization_eval.sh`](phaselocknet_localization_eval.sh), [`phaselocknet_spkr_word_train.sh`](phaselocknet_spkr_word_train.sh), [`phaselocknet_spkr_word_eval.sh`](phaselocknet_spkr_word_eval.sh)).
 
 The [`model_run_all_experiments.ipynb`](model_run_all_experiments.ipynb) Jupyter Notebook can be used to run all analyses in the paper, provided all model evaluation output files have been downloaded from the [Google Drive](https://drive.google.com/drive/folders/1YgC7x6Ot84XZInlSyHK-9NQ0jhhGUS2z?usp=share_link). This notebook generates the results files in the [`data/model`](data/model) folder. These results files contain human and model behavioral data as well as human-model comparison metrics.
 
