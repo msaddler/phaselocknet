@@ -2,13 +2,13 @@ Code to accompany the manuscript "Models optimized for real-world tasks reveal t
 
 ## Dependencies
 
-This is a repository of Python (3.11.4) code. A complete list of Python dependencies is contained in [`requirements.txt`](requirements.txt). The models were developed in `tensorflow-2.13.0`.
+This is a repository of Python (3.11.4) code. A complete list of Python dependencies is contained in [`requirements.txt`](requirements.txt). The models were developed in `tensorflow-2.13.0` on machines running CentOS Linux 7.
 
 ## Sound Datasets and Model Weights
 
 Sound datasets, trained model weights, and raw model evaluation outputs for each model configuration are too large to include here, but can be downloaded from our [Google Drive](https://drive.google.com/drive/folders/1YgC7x6Ot84XZInlSyHK-9NQ0jhhGUS2z?usp=share_link). The file structure of the Google Drive (which mirrors this repository) should be preserved for code to run without altering file paths.
 
-To run models with the detailed auditory nerve input representation, simulated auditory nerve representations need to be pre-computed. Code for this is provided; however, it is computationally expensive and requires considerable disk space. For each auditory nerve model configuration, the sound localization training dataset requires 12 TB and the word/voice recognition training dataset requires 26 TB. For most purposes, we recommend using the "simplified" models, which include a simpler auditory nerve model as part of the `tensorflow` computation graph such that the model can operate directly on sound waveforms.
+To run models with the detailed auditory nerve input representation, simulated auditory nerve representations need to be pre-computed. Code for this is provided; however, it is computationally expensive and requires considerable disk space. For each auditory nerve model configuration, the sound localization training dataset requires 12 TB and the word/voice recognition training dataset requires 26 TB. For most purposes, we recommend using the "simplified" models, which include a simpler auditory nerve model as part of the `tensorflow` computation graph such that they can operate directly on sound waveforms.
 
 ## Contents
 
