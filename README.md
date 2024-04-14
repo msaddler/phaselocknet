@@ -14,7 +14,11 @@ To run models with the detailed auditory nerve input representation, simulated a
 
 The [`model_DEMO.ipynb`](model_DEMO.ipynb) Jupyter Notebook provides minimal examples of how to use our trained models.
 
-Code for training and evaluating the models at scale can be found in [`phaselocknet_run.py`](phaselocknet_run.py), which is called in the example SLURM scripts provided ([`phaselocknet_localization_train.sh`](phaselocknet_localization_train.sh), [`phaselocknet_localization_eval.sh`](phaselocknet_localization_eval.sh), [`phaselocknet_spkr_word_train.sh`](phaselocknet_spkr_word_train.sh), [`phaselocknet_spkr_word_eval.sh`](phaselocknet_spkr_word_eval.sh)).
+Code for training and evaluating the models at scale is located in [`phaselocknet_run.py`](phaselocknet_run.py), which is called by the example SLURM scripts provided:
+- [`phaselocknet_localization_train.sh`](phaselocknet_localization_train.sh)
+- [`phaselocknet_localization_eval.sh`](phaselocknet_localization_eval.sh)
+- [`phaselocknet_spkr_word_train.sh`](phaselocknet_spkr_word_train.sh)
+- [`phaselocknet_spkr_word_eval.sh`](phaselocknet_spkr_word_eval.sh))
 
 The [`model_run_all_experiments.ipynb`](model_run_all_experiments.ipynb) Jupyter Notebook can be used to run all analyses in the paper, provided all model evaluation output files have been downloaded from the [Google Drive](https://drive.google.com/drive/folders/1YgC7x6Ot84XZInlSyHK-9NQ0jhhGUS2z?usp=share_link). This notebook generates the results files in the [`data/model`](data/model) folder. These results files contain human and model behavioral data as well as human-model comparison metrics.
 
