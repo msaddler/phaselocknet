@@ -108,6 +108,7 @@ The included results files are sufficient to generate all figures in the paper u
             |__ valid
 
 ## External dependencies
+|__ configure_bez2018model_nervegram_generation.ipynb
 |__ bez2018model (https://github.com/msaddler/bez2018model)
 |__ virtual_acoustic_room (https://github.com/msaddler/virtual_acoustic_room)
 ```
