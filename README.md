@@ -30,7 +30,7 @@ The included results files are sufficient to generate all figures in the paper u
 - Word and voice recognition experiments: [`figures_spkr_word_results.ipynb`](figures_spkr_word_results.ipynb)
 - Supplementary table of model architectures: [`model_architecture_table.ipynb`](model_architecture_table.ipynb)
 
-### File structure
+## File structure
 ```
 ## Jupyter notebooks (demo, analyses, and figures)
 |__ model_DEMO.ipynb
