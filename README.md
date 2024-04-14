@@ -28,14 +28,7 @@ The included results files are sufficient to generate all figures in the paper u
 
 ### File structure
 ```
-## Scripts for running model optimization and evaluation
-|__ phaselocknet_run.py
-|__ phaselocknet_localization_eval.sh
-|__ phaselocknet_localization_train.sh
-|__ phaselocknet_spkr_word_eval.sh
-|__ phaselocknet_spkr_word_train.sh
-
-## Jupyter notebooks for running analyses and generating figures
+## Jupyter notebooks (demo, analyses, and figures)
 |__ model_DEMO.ipynb
 |__ model_architecture_table.ipynb
 |__ model_run_all_experiments.ipynb
@@ -44,8 +37,16 @@ The included results files are sufficient to generate all figures in the paper u
 |__ figures_localization_schematics.ipynb
 |__ figures_phase_locking_manipulation.ipynb
 |__ figures_spkr_word_results.ipynb
+|__ configure_bez2018model_nervegram_generation.ipynb
 
-## Utility files
+## Scripts for running model optimization and evaluation
+|__ phaselocknet_run.py
+|__ phaselocknet_localization_eval.sh
+|__ phaselocknet_localization_train.sh
+|__ phaselocknet_spkr_word_eval.sh
+|__ phaselocknet_spkr_word_train.sh
+
+## Utilities
 |__ util_bez2018model_job.sh
 |__ util_bez2018model.py
 |__ util_cochlea.py
@@ -107,8 +108,7 @@ The included results files are sufficient to generate all figures in the paper u
             |__ train
             |__ valid
 
-## External dependencies
-|__ configure_bez2018model_nervegram_generation.ipynb
+## External repositories
 |__ bez2018model (https://github.com/msaddler/bez2018model)
 |__ virtual_acoustic_room (https://github.com/msaddler/virtual_acoustic_room)
 ```
