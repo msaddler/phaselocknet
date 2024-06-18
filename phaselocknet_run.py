@@ -180,7 +180,7 @@ if __name__ == "__main__":
             dataset=None,
             key_inputs=CONFIG['kwargs_optimize']['key_inputs'],
             key_outputs=CONFIG['kwargs_optimize']['key_outputs'],
-            key_activations=key_activations,
+            key_activations=[],
             model_io_function=model_io_function,
             kwargs_loss=CONFIG['kwargs_optimize'].get('kwargs_loss', {}),
             kwargs_dataset_from_tfrecords=kwargs_dataset_from_tfrecords,
