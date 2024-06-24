@@ -124,7 +124,7 @@ if __name__ == "__main__":
     kwargs_dataset_from_tfrecords = CONFIG.get('kwargs_dataset_from_tfrecords', {})
     kwargs_dataset_from_tfrecords['map_function'] = []
     if ('label_loc_int' in n_classes_dict):
-        nervegram_slice_length = 10000
+        nervegram_slice_length = 20000 if "sr20000" in args.dir_model else 10000
         dur_signal = 1.2
         rate_in = 44100
         rate_out = 50000

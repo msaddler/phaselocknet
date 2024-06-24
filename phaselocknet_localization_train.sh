@@ -2,10 +2,11 @@
 #
 #SBATCH --job-name=phaselocknet_localization_train
 #SBATCH --out="slurm-%A_%a.out"
-#SBATCH --cpus-per-task=24
+#SBATCH --cpus-per-task=20
 #SBATCH --mem=32G
-#SBATCH --gres=gpu:a100:1
-#SBATCH --array=0-99
+##SBATCH --gres=gpu:a100:1
+#SBATCH --gres=gpu:1 --exclude=node[017-094,097,098],dgx001,dgx002
+#SBATCH --array=0-19
 #SBATCH --partition=normal --time=2-0
 #SBATCH --requeue
 
@@ -14,6 +15,27 @@ job_idx=$(($SLURM_ARRAY_TASK_ID + $offset))
 
 # Specify model directory (`job_idx` is used to parallelize over `list_model_dir`)
 declare -a list_model_dir=(
+    "models/sound_localization/sr20000_IHC3000/arch01"
+    "models/sound_localization/sr20000_IHC3000/arch02"
+    "models/sound_localization/sr20000_IHC3000/arch03"
+    "models/sound_localization/sr20000_IHC3000/arch04"
+    "models/sound_localization/sr20000_IHC3000/arch05"
+    "models/sound_localization/sr20000_IHC3000/arch06"
+    "models/sound_localization/sr20000_IHC3000/arch07"
+    "models/sound_localization/sr20000_IHC3000/arch08"
+    "models/sound_localization/sr20000_IHC3000/arch09"
+    "models/sound_localization/sr20000_IHC3000/arch10"
+    "models/sound_localization/sr20000_IHC3000_delayed_integration/arch01"
+    "models/sound_localization/sr20000_IHC3000_delayed_integration/arch02"
+    "models/sound_localization/sr20000_IHC3000_delayed_integration/arch03"
+    "models/sound_localization/sr20000_IHC3000_delayed_integration/arch04"
+    "models/sound_localization/sr20000_IHC3000_delayed_integration/arch05"
+    "models/sound_localization/sr20000_IHC3000_delayed_integration/arch06"
+    "models/sound_localization/sr20000_IHC3000_delayed_integration/arch07"
+    "models/sound_localization/sr20000_IHC3000_delayed_integration/arch08"
+    "models/sound_localization/sr20000_IHC3000_delayed_integration/arch09"
+    "models/sound_localization/sr20000_IHC3000_delayed_integration/arch10"
+
     "models/sound_localization/IHC0050/arch01"
     "models/sound_localization/IHC0050/arch02"
     "models/sound_localization/IHC0050/arch03"
@@ -132,10 +154,13 @@ fi
 if [[ "$model_dir" == *"IHC0050"* ]]; then
     DATA_TAG="tfrecords_IHC0050"
 fi
+if [[ "$model_dir" == *"sr20000_IHC3000"* ]]; then
+    DATA_TAG="tfrecords_IHC3000_sr20000"
+fi
 
 # Specify training and validation datasets using `DATA_TAG`
-regex_train="stimuli/sound_localization/optimization/train/$DATA_TAG/*tfrecords"
-regex_valid="stimuli/sound_localization/optimization/valid/$DATA_TAG/*tfrecords"
+regex_train="$VAST_SCRATCH_PATH/stimuli/sound_localization/optimization/train/$DATA_TAG/*tfrecords"
+regex_valid="$VAST_SCRATCH_PATH/stimuli/sound_localization/optimization/valid/$DATA_TAG/*tfrecords"
 
 # Activate python environment and run `phaselocknet_run.py`
 module add openmind8/anaconda
