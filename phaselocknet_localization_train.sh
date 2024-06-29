@@ -2,8 +2,8 @@
 #
 #SBATCH --job-name=phaselocknet_localization_train
 #SBATCH --out="slurm-%A_%a.out"
-#SBATCH --cpus-per-task=20
-#SBATCH --mem=32G
+#SBATCH --cpus-per-task=12
+#SBATCH --mem=40G
 ##SBATCH --gres=gpu:a100:1
 #SBATCH --gres=gpu:1 --exclude=node[017-094,097,098],dgx001,dgx002
 #SBATCH --array=0-19
@@ -164,7 +164,15 @@ regex_valid="$VAST_SCRATCH_PATH/stimuli/sound_localization/optimization/valid/$D
 
 # Activate python environment and run `phaselocknet_run.py`
 module add openmind8/anaconda
-source activate tf
+# source activate tf
+export LD_LIBRARY_PATH='/om2/user/msaddler/.conda/envs/ntf/lib/:/om2/user/msaddler/.conda/envs/ntf/lib/python3.11/site-packages/nvidia/cudnn/lib'
+source activate ntf
+
+# module add openmind8/anaconda/3-2022.10
+# source activate tf
+# module add openmind8/cuda/11.7 
+# module add openmind8/cudnn/8.7.0-cuda11
+
 python -u phaselocknet_run.py \
 -m "$model_dir" \
 -c "config.json" \
