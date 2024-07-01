@@ -2,10 +2,11 @@
 #
 #SBATCH --job-name=phaselocknet_spkr_word_train
 #SBATCH --out="slurm-%A_%a.out"
-#SBATCH --cpus-per-task=24
-#SBATCH --mem=32G
-#SBATCH --gres=gpu:a100:1
-#SBATCH --array=0-159
+#SBATCH --cpus-per-task=16
+#SBATCH --mem=40G
+##SBATCH --gres=gpu:a100:1
+#SBATCH --gres=gpu:1 --exclude=node[017-094,097,098],dgx001,dgx002
+#SBATCH --array=0-29
 #SBATCH --partition=normal --time=2-0
 #SBATCH --requeue
 
@@ -14,6 +15,37 @@ job_idx=$(($SLURM_ARRAY_TASK_ID + $offset))
 
 # Specify model directory (`job_idx` is used to parallelize over `list_model_dir`)
 declare -a list_model_dir=(
+    "models/spkr_word_recognition/sr20000_IHC3000/arch0_0000"
+    "models/spkr_word_recognition/sr20000_IHC3000/arch0_0001"
+    "models/spkr_word_recognition/sr20000_IHC3000/arch0_0002"
+    "models/spkr_word_recognition/sr20000_IHC3000/arch0_0004"
+    "models/spkr_word_recognition/sr20000_IHC3000/arch0_0006"
+    "models/spkr_word_recognition/sr20000_IHC3000/arch0_0007"
+    "models/spkr_word_recognition/sr20000_IHC3000/arch0_0008"
+    "models/spkr_word_recognition/sr20000_IHC3000/arch0_0009"
+    "models/spkr_word_recognition/sr20000_IHC3000/arch0_0016"
+    "models/spkr_word_recognition/sr20000_IHC3000/arch0_0017"
+    "models/spkr_recognition/sr20000_IHC3000/arch0_0000"
+    "models/spkr_recognition/sr20000_IHC3000/arch0_0001"
+    "models/spkr_recognition/sr20000_IHC3000/arch0_0002"
+    "models/spkr_recognition/sr20000_IHC3000/arch0_0004"
+    "models/spkr_recognition/sr20000_IHC3000/arch0_0006"
+    "models/spkr_recognition/sr20000_IHC3000/arch0_0007"
+    "models/spkr_recognition/sr20000_IHC3000/arch0_0008"
+    "models/spkr_recognition/sr20000_IHC3000/arch0_0009"
+    "models/spkr_recognition/sr20000_IHC3000/arch0_0016"
+    "models/spkr_recognition/sr20000_IHC3000/arch0_0017"
+    "models/word_recognition/sr20000_IHC3000/arch0_0000"
+    "models/word_recognition/sr20000_IHC3000/arch0_0001"
+    "models/word_recognition/sr20000_IHC3000/arch0_0002"
+    "models/word_recognition/sr20000_IHC3000/arch0_0004"
+    "models/word_recognition/sr20000_IHC3000/arch0_0006"
+    "models/word_recognition/sr20000_IHC3000/arch0_0007"
+    "models/word_recognition/sr20000_IHC3000/arch0_0008"
+    "models/word_recognition/sr20000_IHC3000/arch0_0009"
+    "models/word_recognition/sr20000_IHC3000/arch0_0016"
+    "models/word_recognition/sr20000_IHC3000/arch0_0017"
+
     "models/spkr_recognition/IHC0050/arch0_0000"
     "models/spkr_recognition/IHC0050/arch0_0001"
     "models/spkr_recognition/IHC0050/arch0_0002"
@@ -192,14 +224,20 @@ fi
 if [[ "$model_dir" == *"IHC0050"* ]]; then
     DATA_TAG="tfrecords_IHC0050"
 fi
+if [[ "$model_dir" == *"sr20000_IHC3000"* ]]; then
+    DATA_TAG="tfrecords_IHC3000_sr20000"
+fi
 
 # Specify training and validation datasets using `DATA_TAG`
-regex_train="stimuli/spkr_word_recognition/optimization/train/$DATA_TAG/*tfrecords"
-regex_valid="stimuli/spkr_word_recognition/optimization/valid/$DATA_TAG/*tfrecords"
+regex_train="$SCRATCH_PATH/stimuli/spkr_word_recognition/optimization/train/$DATA_TAG/*tfrecords"
+regex_valid="$SCRATCH_PATH/stimuli/spkr_word_recognition/optimization/valid/$DATA_TAG/*tfrecords"
 
 # Activate python environment and run `phaselocknet_run.py`
 module add openmind8/anaconda
-source activate tf
+# source activate tf
+export LD_LIBRARY_PATH='/om2/user/msaddler/.conda/envs/ntf/lib/:/om2/user/msaddler/.conda/envs/ntf/lib/python3.11/site-packages/nvidia/cudnn/lib'
+source activate ntf
+
 python -u phaselocknet_run.py \
 -m "$model_dir" \
 -c "config.json" \
