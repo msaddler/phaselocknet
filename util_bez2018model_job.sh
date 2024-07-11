@@ -7,22 +7,16 @@
 #SBATCH --nodes=1
 #SBATCH --time=2-00:00:00
 #SBATCH --exclude=node[017-094,097,098],dgx001,dgx002
-#SBATCH --array=0-999
+#SBATCH --array=0-99
 ##SBATCH --partition=mcdermott
 #SBATCH --partition=use-everything
 #SBATCH --requeue
 
-regex_src="stimuli/spkr_word_recognition/optimization/train/*.hdf5"
-dir_dst="$VAST_SCRATCH_PATH/stimuli/spkr_word_recognition/optimization/train/tfrecords_IHC3000_sr20000"
-jobs_per_source_file=5
-# regex_src="stimuli/spkr_word_recognition/optimization/valid/*.hdf5"
-# dir_dst="$VAST_SCRATCH_PATH/stimuli/spkr_word_recognition/optimization/valid/tfrecords_IHC3000_sr20000"
-# jobs_per_source_file=5
-# regex_src="stimuli/sound_localization/optimization/valid/*.hdf5"
-# dir_dst="$VAST_SCRATCH_PATH/stimuli/sound_localization/optimization/valid/tfrecords_IHC3000_sr20000"
-# jobs_per_source_file=3
+regex_src="stimuli/spkr_word_recognition/evaluation/hopkins_moore_2009/*.hdf5"
+dir_dst="$SCRATCH_PATH/stimuli/spkr_word_recognition/evaluation/hopkins_moore_2009/tfrecords_IHC3000_sr20000"
+jobs_per_source_file=100
 # regex_src="stimuli/sound_localization/evaluation/v01_eval_mit_bldg46room1004_tenoise/*.hdf5"
-# dir_dst="$VAST_SCRATCH_PATH/stimuli/sound_localization/evaluation/v01_eval_mit_bldg46room1004_tenoise/tfrecords_IHC3000_sr20000"
+# dir_dst="$SCRATCH_PATH/stimuli/sound_localization/evaluation/v01_eval_mit_bldg46room1004_tenoise/tfrecords_IHC3000_sr20000"
 # jobs_per_source_file=60
 offset=0
 job_idx=$(($SLURM_ARRAY_TASK_ID + $offset))

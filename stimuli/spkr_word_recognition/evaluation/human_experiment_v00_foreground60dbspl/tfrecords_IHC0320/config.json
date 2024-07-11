@@ -57,8 +57,6 @@
             "background_condition",
             "background_index",
             "dbspl",
-            "decoding_dict_background_source_file",
-            "decoding_dict_foreground_source_file",
             "foreground_dbspl",
             "foreground_index",
             "index",
