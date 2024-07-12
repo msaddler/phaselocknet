@@ -121,6 +121,8 @@ def make_plot_comparison_metrics(
             label = label + ' (delayed)' if include_legend else label + '\n' + r'$^{\text{(delayed)}}$'
         else:
             facecolor = color
+        if 'sr20000' in tag_model:
+            color = 'green'
         parts = ax.violinplot(
             dfi[f'bootstrap_list_{key_metric}'],
             positions=[x],
