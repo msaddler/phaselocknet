@@ -1,7 +1,7 @@
 #!/bin/bash
 #
 #SBATCH --job-name=bez2018model
-#SBATCH --out="trash/slurm-%A_%a.out"
+#SBATCH --out="trash/zslurm-%A_%a.out"
 #SBATCH --cpus-per-task=2
 #SBATCH --mem=2000
 #SBATCH --nodes=1
@@ -12,12 +12,12 @@
 #SBATCH --partition=use-everything
 #SBATCH --requeue
 
-regex_src="stimuli/spkr_word_recognition/evaluation/hopkins_moore_2009/*.hdf5"
-dir_dst="$SCRATCH_PATH/stimuli/spkr_word_recognition/evaluation/hopkins_moore_2009/tfrecords_IHC3000_sr20000"
+# regex_src="stimuli/spkr_word_recognition/evaluation/hopkins_moore_2009/*.hdf5"
+# dir_dst="$SCRATCH_PATH/stimuli/spkr_word_recognition/evaluation/hopkins_moore_2009/tfrecords_IHC3000_sr20000"
+# jobs_per_source_file=100
+regex_src="stimuli/sound_localization/evaluation/new_ears/*.hdf5"
+dir_dst="$SCRATCH_PATH/stimuli/sound_localization/evaluation/new_ears/tfrecords_IHC3000_sr20000"
 jobs_per_source_file=100
-# regex_src="stimuli/sound_localization/evaluation/v01_eval_mit_bldg46room1004_tenoise/*.hdf5"
-# dir_dst="$SCRATCH_PATH/stimuli/sound_localization/evaluation/v01_eval_mit_bldg46room1004_tenoise/tfrecords_IHC3000_sr20000"
-# jobs_per_source_file=60
 offset=0
 job_idx=$(($SLURM_ARRAY_TASK_ID + $offset))
 
