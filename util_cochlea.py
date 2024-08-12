@@ -20,7 +20,8 @@ def cochlea(tensor_input,
             kwargs_custom_slice={},
             kwargs_sigmoid_rate_level_function={},
             kwargs_spike_rate_noise={},
-            kwargs_spike_generator_binomial={}):
+            kwargs_spike_generator_binomial={},
+            kwargs_autocorrelation_correlogram={}):
     """
     """
     # Initialize sequential keras model for cochlear processing stages 
@@ -152,6 +153,15 @@ def cochlea(tensor_input,
             layer = SpikeGeneratorBinomial(**kwargs_spike_generator_binomial, name='spike_generator_binomial')
         model.add(layer)
         print('[cochlea] incorporated spike_generator_binomial: {}'.format(kwargs_spike_generator_binomial))
+    
+    # Compute autocorrelation correlogram
+    if kwargs_autocorrelation_correlogram:
+        if 'sr' not in kwargs_autocorrelation_correlogram:
+            kwargs_autocorrelation_correlogram['sr'] = sr_output
+            print('[cochlea] inferring `sr={}` for autocorrelation_correlogram'.format(sr_output))
+        layer = AutocorrelationCorrelogram(**kwargs_autocorrelation_correlogram, name='autocorrelation_correlogram')
+        model.add(layer)
+        print('[cochlea] incorporated autocorrelation_correlogram: {}'.format(kwargs_autocorrelation_correlogram))
     
     tensor_output = None
     if tensor_input is not None:
@@ -559,3 +569,85 @@ class SpikeGeneratorBinomial(tf.keras.layers.Layer):
             )
         tensor_spike_counts = tf.cast(tensor_spike_counts, inputs.dtype)
         return tensor_spike_counts
+
+
+class AutocorrelationCorrelogram(tf.keras.layers.Layer):
+    """
+    """
+    def __init__(self,
+                 sr=10e3,
+                 dur_frame=0.050,
+                 overlap=0.5,
+                 one_sided=True,
+                 concat_axis=-1,
+                 name="autocorrelation_correlogram",
+                 **kwargs):
+        """
+        """
+        self.sr = sr
+        self.dur_frame = dur_frame
+        self.len_frame = int(sr * dur_frame)
+        self.overlap = overlap
+        self.one_sided = one_sided
+        self.concat_axis = concat_axis
+        self.window = tf.signal.hann_window(
+            window_length=self.len_frame,
+            periodic=True,
+        )
+        while self.window.ndim < 4:
+            self.window = self.window[None, :]
+        self.list_itr_frame = None
+        super().__init__(name=name, **kwargs)
+
+    def call(self, nervegram):
+        """
+        """
+        nervegram = tf.transpose(nervegram, perm=[0, 1, 3, 2])
+        nervegram_acg = []
+        if self.list_itr_frame is None:
+            self.list_itr_frame = np.arange(
+                0,
+                nervegram.shape[-1],
+                int(self.len_frame * (1 - self.overlap)),
+                dtype=int,
+            )
+        for itr_frame in self.list_itr_frame:
+            tmp = nervegram[..., slice(itr_frame, itr_frame + self.len_frame)]
+            if tmp.shape[-1] < self.len_frame:
+                paddings = [[0, 0]] * tmp.ndim
+                paddings[-1] = [0, self.len_frame - tmp.shape[-1]]
+                tmp = tf.pad(tmp, paddings=paddings, mode="CONSTANT", constant_values=0)
+            nervegram_acg.append(tmp)
+        nervegram_acg = tf.stack(nervegram_acg, axis=-2)
+        nervegram_acg = self.window * nervegram_acg
+        nervegram_acg = tf.signal.rfft(nervegram_acg)
+        nervegram_acg = tf.signal.irfft(nervegram_acg * tf.math.conj(nervegram_acg))
+        nervegram_acg = tf.nn.relu(nervegram_acg)
+        normalization_values = nervegram_acg[..., 0:1]
+        normalization_values = tf.where(
+            tf.equal(normalization_values, 0),
+            tf.ones_like(normalization_values),
+            normalization_values,
+        )
+        nervegram_acg = nervegram_acg / tf.math.sqrt(normalization_values)
+        if self.one_sided:
+            nervegram_acg = nervegram_acg[..., :nervegram_acg.shape[-1] // 2]
+        else:
+            nervegram_acg = tf.signal.fftshift(nervegram_acg, axes=-1)
+        nervegram_acg = tf.reshape(
+            nervegram_acg,
+            [
+                -1,
+                nervegram_acg.shape[1],
+                nervegram_acg.shape[2],
+                nervegram_acg.shape[3] * nervegram_acg.shape[4],
+            ],
+        )
+        nervegram = tf.transpose(nervegram, perm=[0, 1, 3, 2])
+        nervegram_acg = tf.transpose(nervegram_acg, perm=[0, 1, 3, 2])
+        if self.concat_axis is not None:
+            nervegram_acg = tf.concat(
+                [nervegram, nervegram_acg],
+                axis=self.concat_axis,
+            )
+        return nervegram_acg
