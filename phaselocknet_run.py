@@ -76,6 +76,9 @@ def prepare_localization_example(example,
                 slice_length=signal_slice_length,
                 axis=-2, # Time axis
                 buffer=None)
+            static_shape = list(example['signal'].shape)
+            static_shape[0] = signal_slice_length
+            example['signal'] = tf.ensure_shape(example['signal'], static_shape)
             print(f"[prepare_localization_example] `signal` sliced: {example['signal'].shape}")
     return example
 

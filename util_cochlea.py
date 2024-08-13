@@ -12,7 +12,7 @@ def cochlea(tensor_input,
             sr_input=20e3,
             sr_cochlea=None,
             sr_output=None,
-            dtype=tf.float32,
+            dtype=tf.dtypes.float32,
             config_filterbank={},
             config_subband_processing={},
             kwargs_fir_lowpass_filter_input={},
@@ -602,9 +602,11 @@ class AutocorrelationCorrelogram(tf.keras.layers.Layer):
     def call(self, nervegram):
         """
         """
+        nervegram = tf.cast(nervegram, tf.dtypes.float32)
         nervegram = tf.transpose(nervegram, perm=[0, 1, 3, 2])
         nervegram_acg = []
         if self.list_itr_frame is None:
+            self.window = tf.cast(self.window, nervegram.dtype)
             self.list_itr_frame = np.arange(
                 0,
                 nervegram.shape[-1],
