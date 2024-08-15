@@ -2,11 +2,11 @@
 #
 #SBATCH --job-name=phaselocknet_spkr_word_train
 #SBATCH --out="slurm-%A_%a.out"
-#SBATCH --cpus-per-task=16
-#SBATCH --mem=40G
+#SBATCH --cpus-per-task=10
+#SBATCH --mem=20G
 ##SBATCH --gres=gpu:a100:1
 #SBATCH --gres=gpu:1 --exclude=node[017-094,097,098],dgx001,dgx002
-#SBATCH --array=0-29
+#SBATCH --array=0-39
 #SBATCH --partition=normal --time=2-0
 #SBATCH --requeue
 
@@ -15,6 +15,47 @@ job_idx=$(($SLURM_ARRAY_TASK_ID + $offset))
 
 # Specify model directory (`job_idx` is used to parallelize over `list_model_dir`)
 declare -a list_model_dir=(
+    "models/spkr_word_recognition/autocorr_onesided/simplified_IHC3000/arch0_0000"
+    "models/spkr_word_recognition/autocorr_onesided/simplified_IHC3000/arch0_0001"
+    "models/spkr_word_recognition/autocorr_onesided/simplified_IHC3000/arch0_0002"
+    "models/spkr_word_recognition/autocorr_onesided/simplified_IHC3000/arch0_0004"
+    "models/spkr_word_recognition/autocorr_onesided/simplified_IHC3000/arch0_0006"
+    "models/spkr_word_recognition/autocorr_onesided/simplified_IHC3000/arch0_0007"
+    "models/spkr_word_recognition/autocorr_onesided/simplified_IHC3000/arch0_0008"
+    "models/spkr_word_recognition/autocorr_onesided/simplified_IHC3000/arch0_0009"
+    "models/spkr_word_recognition/autocorr_onesided/simplified_IHC3000/arch0_0016"
+    "models/spkr_word_recognition/autocorr_onesided/simplified_IHC3000/arch0_0017"
+    "models/spkr_word_recognition/autocorr_onesided/simplified_IHC0050/arch0_0000"
+    "models/spkr_word_recognition/autocorr_onesided/simplified_IHC0050/arch0_0001"
+    "models/spkr_word_recognition/autocorr_onesided/simplified_IHC0050/arch0_0002"
+    "models/spkr_word_recognition/autocorr_onesided/simplified_IHC0050/arch0_0004"
+    "models/spkr_word_recognition/autocorr_onesided/simplified_IHC0050/arch0_0006"
+    "models/spkr_word_recognition/autocorr_onesided/simplified_IHC0050/arch0_0007"
+    "models/spkr_word_recognition/autocorr_onesided/simplified_IHC0050/arch0_0008"
+    "models/spkr_word_recognition/autocorr_onesided/simplified_IHC0050/arch0_0009"
+    "models/spkr_word_recognition/autocorr_onesided/simplified_IHC0050/arch0_0016"
+    "models/spkr_word_recognition/autocorr_onesided/simplified_IHC0050/arch0_0017"
+    "models/spkr_word_recognition/autocorr_onesided/simplified_IHC0320/arch0_0000"
+    "models/spkr_word_recognition/autocorr_onesided/simplified_IHC0320/arch0_0001"
+    "models/spkr_word_recognition/autocorr_onesided/simplified_IHC0320/arch0_0002"
+    "models/spkr_word_recognition/autocorr_onesided/simplified_IHC0320/arch0_0004"
+    "models/spkr_word_recognition/autocorr_onesided/simplified_IHC0320/arch0_0006"
+    "models/spkr_word_recognition/autocorr_onesided/simplified_IHC0320/arch0_0007"
+    "models/spkr_word_recognition/autocorr_onesided/simplified_IHC0320/arch0_0008"
+    "models/spkr_word_recognition/autocorr_onesided/simplified_IHC0320/arch0_0009"
+    "models/spkr_word_recognition/autocorr_onesided/simplified_IHC0320/arch0_0016"
+    "models/spkr_word_recognition/autocorr_onesided/simplified_IHC0320/arch0_0017"
+    "models/spkr_word_recognition/autocorr_onesided/simplified_IHC1000/arch0_0000"
+    "models/spkr_word_recognition/autocorr_onesided/simplified_IHC1000/arch0_0001"
+    "models/spkr_word_recognition/autocorr_onesided/simplified_IHC1000/arch0_0002"
+    "models/spkr_word_recognition/autocorr_onesided/simplified_IHC1000/arch0_0004"
+    "models/spkr_word_recognition/autocorr_onesided/simplified_IHC1000/arch0_0006"
+    "models/spkr_word_recognition/autocorr_onesided/simplified_IHC1000/arch0_0007"
+    "models/spkr_word_recognition/autocorr_onesided/simplified_IHC1000/arch0_0008"
+    "models/spkr_word_recognition/autocorr_onesided/simplified_IHC1000/arch0_0009"
+    "models/spkr_word_recognition/autocorr_onesided/simplified_IHC1000/arch0_0016"
+    "models/spkr_word_recognition/autocorr_onesided/simplified_IHC1000/arch0_0017"
+
     "models/spkr_word_recognition/sr20000_IHC3000/arch0_0000"
     "models/spkr_word_recognition/sr20000_IHC3000/arch0_0001"
     "models/spkr_word_recognition/sr20000_IHC3000/arch0_0002"
@@ -227,10 +268,13 @@ fi
 if [[ "$model_dir" == *"sr20000_IHC3000"* ]]; then
     DATA_TAG="tfrecords_IHC3000_sr20000"
 fi
+if [[ "$model_dir" == *"simplified"* ]]; then
+    DATA_TAG="tfrecords_simplified"
+fi
 
 # Specify training and validation datasets using `DATA_TAG`
-regex_train="$SCRATCH_PATH/stimuli/spkr_word_recognition/optimization/train/$DATA_TAG/*tfrecords"
-regex_valid="$SCRATCH_PATH/stimuli/spkr_word_recognition/optimization/valid/$DATA_TAG/*tfrecords"
+regex_train="$VAST_SCRATCH_PATH/stimuli/spkr_word_recognition/optimization/train/$DATA_TAG/*tfrecords"
+regex_valid="$VAST_SCRATCH_PATH/stimuli/spkr_word_recognition/optimization/valid/$DATA_TAG/*tfrecords"
 
 # Activate python environment and run `phaselocknet_run.py`
 module add openmind8/anaconda
