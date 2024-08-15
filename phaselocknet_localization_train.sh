@@ -6,7 +6,7 @@
 #SBATCH --mem=32G
 ##SBATCH --gres=gpu:a100:1
 #SBATCH --gres=gpu:1 --exclude=node[017-094,097,098],dgx001,dgx002
-#SBATCH --array=0-39
+#SBATCH --array=0-49
 #SBATCH --partition=normal --time=2-0
 #SBATCH --requeue
 
@@ -55,6 +55,16 @@ declare -a list_model_dir=(
     "models/sound_localization/autocorr_onesided/simplified_IHC1000/arch08"
     "models/sound_localization/autocorr_onesided/simplified_IHC1000/arch09"
     "models/sound_localization/autocorr_onesided/simplified_IHC1000/arch10"
+    "models/sound_localization/autocorr_onesided/simplified_IHC3000_delayed_integration/arch01"
+    "models/sound_localization/autocorr_onesided/simplified_IHC3000_delayed_integration/arch02"
+    "models/sound_localization/autocorr_onesided/simplified_IHC3000_delayed_integration/arch03"
+    "models/sound_localization/autocorr_onesided/simplified_IHC3000_delayed_integration/arch04"
+    "models/sound_localization/autocorr_onesided/simplified_IHC3000_delayed_integration/arch05"
+    "models/sound_localization/autocorr_onesided/simplified_IHC3000_delayed_integration/arch06"
+    "models/sound_localization/autocorr_onesided/simplified_IHC3000_delayed_integration/arch07"
+    "models/sound_localization/autocorr_onesided/simplified_IHC3000_delayed_integration/arch08"
+    "models/sound_localization/autocorr_onesided/simplified_IHC3000_delayed_integration/arch09"
+    "models/sound_localization/autocorr_onesided/simplified_IHC3000_delayed_integration/arch10"
 
     "models/sound_localization/sr20000_IHC3000/arch01"
     "models/sound_localization/sr20000_IHC3000/arch02"
