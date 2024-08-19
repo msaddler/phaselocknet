@@ -55,6 +55,12 @@ def build_network(tensor_input, list_layer_dict, n_classes_dict={}):
                 layer = tf.keras.layers.MaxPool2D
             elif 'hpool' in layer_type:
                 layer = HanningPooling
+            elif ('autocorrelationcorrelogram' in layer_type) or ('autocorrelation_correlogram' in layer_type):
+                layer_dict["args"]["num_frame"] = int(tensor_output.shape[2])
+                layer_dict["args"]["freq_pool"] = int(np.round(tensor_input.shape[1] / tensor_output.shape[1]))
+                print(f"[AutocorrelationCorrelogram] {layer_dict['args']}")
+                tensor_output = (tensor_input, tensor_output)
+                layer = AutocorrelationCorrelogram
             elif 'slice' in layer_type:
                 layer = lambda **args: tf.keras.layers.Lambda(
                     function=tf.slice,
@@ -263,6 +269,132 @@ def HanningPooling(strides=2,
         return tensor_output
     
     return tf.keras.layers.Lambda(layer_io_function, name=name)
+
+
+class AutocorrelationCorrelogram(tf.keras.layers.Layer):
+    """
+    Class to compute autocorrelation correlogram on nervegram
+    inputs with shape [batch, freq, time, channels].
+    """
+    def __init__(self,
+                 num_frame=300,
+                 len_frame=512,
+                 one_sided=True,
+                 channel_mode="mean",
+                 freq_pool=None,
+                 name="autocorrelation_correlogram",
+                 **kwargs):
+        """
+        Initialize AutocorrelationCorrelogram layer
+
+        Args
+        ----
+        num_frame (int): number of frames to subdivide time axis
+        len_frame (int): length of each individual frame (samples)
+        one_sided (bool): if True, discard negative lags in ACF
+        channel_mode (int or str): how to handle channel axis
+        freq_pool (None or int): freq axis Hanning pool factor
+        """
+        self.num_frame = num_frame
+        self.len_frame = len_frame
+        self.one_sided = one_sided
+        self.channel_mode = channel_mode
+        self.window = tf.signal.hann_window(
+            window_length=self.len_frame,
+            periodic=True,
+        )
+        while self.window.ndim < 4:
+            self.window = self.window[None, :]
+        self.list_itr_frame = None
+        self.freq_pool = freq_pool
+        if (self.freq_pool is not None) and (self.freq_pool > 1):
+            self.freq_pool = HanningPooling(
+                strides=[self.freq_pool, 1],
+                pool_size=[self.freq_pool * 4, 1],
+                padding="SAME",
+                sqrt_window=True,
+                normalize=False,
+                name=None,
+            )
+        else:
+            self.freq_pool = None
+        super().__init__(name=name, **kwargs)
+
+    def call(self, nervegram):
+        """
+        Call AutocorrelationCorrelogram layer
+
+        Args
+        ----
+        nervegram (tensor): input with shape [batch, freq, time, channel]
+
+        Returns
+        -------
+        nervegram_acg (tensor): autocorrelogram features with shape
+            [batch, freq, time, autocorrelation function lags]
+        """
+        if isinstance(nervegram, tuple):
+            nervegram, activations_to_concat = nervegram
+        else:
+            activations_to_concat = None
+        nervegram = tf.cast(nervegram, tf.dtypes.float32)
+        nervegram = tf.transpose(nervegram, perm=[0, 1, 3, 2])
+        if isinstance(self.channel_mode, int):
+            nervegram = nervegram[..., self.channel_mode, :]
+        nervegram_acg = []
+        if self.list_itr_frame is None:
+            self.window = tf.cast(self.window, nervegram.dtype)
+            self.list_itr_frame = np.linspace(
+                start=0,
+                stop=nervegram.shape[-1] - self.len_frame,
+                num=self.num_frame,
+                dtype=int,
+            )
+        nervegram_acg = tf.stack(
+            [nervegram[..., _ : _ + self.len_frame] for _ in self.list_itr_frame],
+            axis=-2,
+        )
+        nervegram_acg = self.window * nervegram_acg
+        nervegram_acg = tf.signal.rfft(nervegram_acg)
+        nervegram_acg = tf.signal.irfft(nervegram_acg * tf.math.conj(nervegram_acg))
+        nervegram_acg = tf.nn.relu(nervegram_acg)
+        normalization_values = nervegram_acg[..., 0:1]
+        normalization_values = tf.where(
+            tf.equal(normalization_values, 0),
+            tf.ones_like(normalization_values),
+            normalization_values,
+        )
+        nervegram_acg = nervegram_acg / tf.math.sqrt(normalization_values)
+        if self.one_sided:
+            nervegram_acg = nervegram_acg[..., :nervegram_acg.shape[-1] // 2]
+        else:
+            nervegram_acg = tf.signal.fftshift(nervegram_acg, axes=-1)
+        if not isinstance(self.channel_mode, int):
+            nervegram_acg = tf.transpose(nervegram_acg, perm=[0, 1, 3, 2, 4])
+            if self.channel_mode.lower() == "mean":
+                nervegram_acg = tf.math.reduce_mean(nervegram_acg, axis=-2)
+            elif self.channel_mode.lower() == "sum":
+                nervegram_acg = tf.math.reduce_sum(nervegram_acg, axis=-2)
+            elif self.channel_mode.lower() == "flatten":
+                nervegram_acg = tf.reshape(
+                    nervegram_acg,
+                    [
+                        -1,
+                        nervegram_acg.shape[1],
+                        nervegram_acg.shape[2],
+                        nervegram_acg.shape[3] * nervegram_acg.shape[4],
+                    ],
+                )
+            else:
+                raise NotImplementedError(f"{self.channel_mode=}")
+        if self.freq_pool is not None:
+            nervegram_acg = self.freq_pool(nervegram_acg)
+        if activations_to_concat is not None:
+            nervegram_acg = tf.concat(
+                [nervegram_acg, activations_to_concat],
+                axis=-1
+            )
+        return nervegram_acg
 
 
 class ExpandLastDimension(tf.keras.layers.Layer):
