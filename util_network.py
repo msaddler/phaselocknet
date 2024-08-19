@@ -56,11 +56,15 @@ def build_network(tensor_input, list_layer_dict, n_classes_dict={}):
             elif 'hpool' in layer_type:
                 layer = HanningPooling
             elif ('autocorrelationcorrelogram' in layer_type) or ('autocorrelation_correlogram' in layer_type):
-                layer_dict["args"]["num_frame"] = int(tensor_output.shape[2])
-                layer_dict["args"]["freq_pool"] = int(np.round(tensor_input.shape[1] / tensor_output.shape[1]))
-                print(f"[AutocorrelationCorrelogram] {layer_dict['args']}")
-                tensor_output = (tensor_input, tensor_output)
                 layer = AutocorrelationCorrelogram
+                concat_autocorrelation_features = layer_dict["args"].pop("concat", True)
+                if concat_autocorrelation_features:
+                    layer_dict["args"]["num_frame"] = int(tensor_output.shape[2])
+                    layer_dict["args"]["freq_pool"] = int(np.round(tensor_input.shape[1] / tensor_output.shape[1]))
+                    tensor_output = (tensor_input, tensor_output)
+                else:
+                    assert ("num_frame" in layer_dict["args"]) and ("freq_pool" in layer_dict["args"])
+                print(f"[AutocorrelationCorrelogram] {concat_autocorrelation_features=}, {layer_dict['args']}")
             elif 'slice' in layer_type:
                 layer = lambda **args: tf.keras.layers.Lambda(
                     function=tf.slice,
@@ -390,6 +394,7 @@ class AutocorrelationCorrelogram(tf.keras.layers.Layer):
         if self.freq_pool is not None:
             nervegram_acg = self.freq_pool(nervegram_acg)
         if activations_to_concat is not None:
+            nervegram_acg = tf.cast(nervegram_acg, activations_to_concat.dtype)
             nervegram_acg = tf.concat(
                 [nervegram_acg, activations_to_concat],
                 axis=-1
