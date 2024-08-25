@@ -6,6 +6,7 @@ import copy
 import collections
 import numpy as np
 import pandas as pd
+import scipy.stats
 import textwrap
 
 import util_figures
@@ -50,6 +51,19 @@ def wrap_xticklabels(ax, width, break_long_words=False, **kwargs):
     return ax
 
 
+def get_p_val(y_null, y):
+    """
+    Estimate two-tailed p-value of obtaining a value of `y`
+    (or more extreme) under the distribution `y_null`
+    """
+    null_dist = scipy.stats.norm(loc=np.mean(y_null), scale=np.std(y_null))
+    p = null_dist.cdf(y)
+    if p > 0.5:
+        p = 1 - p
+    p = p * 2
+    return p
+
+
 def cohend(x, y):
     """
     """
@@ -59,6 +73,99 @@ def cohend(x, y):
     vy = np.var(y)
     s = np.sqrt(((nx - 1) * vx + (ny - 1) * vy) / (nx + ny - 2))
     return (np.mean(y) - np.mean(x)) / s
+
+
+def get_aggregate_measure(
+    fn_data_localization="data/model/sound_localization.pkl",
+    fn_data_spkr_word="data/model/spkr_word_recognition.pkl",
+    fn_comparison_localization="data/model/sound_localization_human_model_comparison_metrics.pkl",
+    fn_comparison_spkr_word="data/model/spkr_word_recognition_human_model_comparison_metrics.pkl",
+    list_tag_model=[],
+    key_task="localization",
+    key_metric="performance",
+):
+    """
+    Helper function to get aggregate measure values and bootstrap distribution from data files.
+    Given a specified `key_task` ("localization", "spkr", or "word") and a `key_metric`
+    ("performance" for overall task performance in noise or "pearsonr" / "rmse" for overall
+    human-model similarity), this function will return a list of aggregate measure values and
+    bootstrap distributions for each model specified in `list_tag_model`.
+    """
+    dict_tag_expt = {
+        "localization": {
+            "snr_dependency": "Sound localization in noise",
+            "itd_ild_weighting": "ITD / ILD cue weighting (Macpherson & Middlebrooks, 2002)",
+            "maa_azimuth": "Minimum audible angle vs. azimuth (Mills, 1958)",
+            "itd_threshold": "ITD lateralization vs. frequency (Brughera et al., 2013)",
+            "new_ears": "Effect of changing ears (Hofman et al., 1998)",
+            "spectral_smoothing": "Effect of smoothing spectral cues (Kulkarni & Colburn, 1998)",
+            "mp_spectral_cues": "Median plane spectral cues (Hebrank & Wright, 1974)",
+            "precedence_effect_localization": "Precedence effect (Litovsky & Godar, 2010)",
+            "bandwidth_dependency": "Bandwidth dependency (Yost & Zhong, 2014)",
+        },
+        "spkr": {
+            "pitch_altered_spkr": "Voice recognition with pitch-altered speech",
+        },
+        "word": {
+            "kell_like_word": "Word recognition as a function of SNR and noise condition",
+            "speech_in_synthetic_textures": "Word recognition in 43 distinct auditory textures",
+            "pitch_altered_word": "Word recognition with pitch-altered speech",
+            "hopkins_moore_2009_word": "Effect of tone vocoding on word recognition in noise (Hopkins & Moore, 2009)",
+        },
+    }
+    key_task_accepted = list(dict_tag_expt.keys())
+    key_metric_accepted = ["pearsonr", "rmse", "performance"]
+    assert key_task in key_task_accepted, f"{key_task=} must be one of {key_task_accepted}"
+    assert key_metric in key_metric_accepted, f"{key_metric=} must be one of {key_metric_accepted}"
+    list_tag_expt = list(dict_tag_expt[key_task].keys())
+    if key_metric in ["pearsonr", "rmse"]:
+        if "localization" in key_task:
+            df = pd.read_pickle(fn_comparison_localization)
+        else:
+            df = pd.read_pickle(fn_comparison_spkr_word)
+        df = df[np.logical_and.reduce([
+            df.tag_model.isin(list_tag_model),
+            df.tag_expt.isin(list_tag_expt),
+        ])]
+        assert df.tag_expt.nunique() == len(list_tag_expt)
+        df = normalize_comparison_metrics(df)
+        df = average_comparison_metrics(df)
+    else:
+        if "localization" in key_task:
+            df = pd.read_pickle(fn_data_localization)["snr_dependency"]
+            df = df[np.logical_and.reduce([
+                df.tag_model.isin(list_tag_model),
+                np.isfinite(df.snr),
+            ])]
+            key_metric = "deg_err"
+        else:
+            df = pd.read_pickle(fn_data_spkr_word)["kell_like"]
+            df = df[np.logical_and.reduce([
+                df.tag_model.isin(list_tag_model),
+                df.snr.isin([-9, -6, -3, 0, 3]),
+                df.background_condition.isin([0, 1, 2, 3]),
+            ])]
+            key_metric = f"correct_{key_task}"
+        df = df.groupby(["tag_model"]).agg({
+            f"{key_metric}_list": list,
+        }).reset_index()
+        df[f"{key_metric}_list"] = df[f"{key_metric}_list"].map(lambda _: np.array(_).mean(axis=0))
+        if "correct" in key_metric:
+            df[f"{key_metric}_list"] = df[f"{key_metric}_list"].map(lambda _: 100 * np.array(_))
+        df[f"{key_metric}"] = df[f"{key_metric}_list"].map(lambda _: np.mean(_))
+        df[f"{key_metric}_sem"] = df[f"{key_metric}_list"].map(lambda _: np.std(_) / np.sqrt(len(_)))
+        np.random.seed(0)
+        df[f"bootstrap_list_{key_metric}"] = df[f"{key_metric}_list"].map(
+            lambda _: np.random.choice(_, size=(1000, len(_))).mean(axis=1))
+    list_y = []
+    list_y_dist = []
+    for tag_model in list_tag_model:
+        dfi = df[df.tag_model == tag_model]
+        assert len(dfi) == 1, f"{tag_model=} --> dataframe of length {len(dfi)} (expected 1)"
+        dfi = dfi.iloc[0]
+        list_y.append(dfi[key_metric])
+        list_y_dist.append(dfi[f"bootstrap_list_{key_metric}"])
+    return list_y, list_y_dist
 
 
 def normalize_comparison_metrics(df):
