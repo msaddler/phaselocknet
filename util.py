@@ -140,7 +140,6 @@ def get_aggregate_measure(
             df.tag_expt.isin(list_tag_expt),
         ])]
         assert df.tag_expt.nunique() == len(list_tag_expt)
-        df = normalize_comparison_metrics(df)
         df = average_comparison_metrics(df)
     else:
         if "localization" in key_task:
@@ -178,23 +177,6 @@ def get_aggregate_measure(
         list_y.append(dfi[key_metric])
         list_y_dist.append(dfi[f"bootstrap_list_{key_metric}"])
     return list_y, list_y_dist
-
-
-def normalize_comparison_metrics(df):
-    """
-    """
-    list_k = [k.replace("bootstrap_list_", "") for k in df.columns if "bootstrap_list_" in k]
-    def to_apply(df):
-        for k in list_k:
-            if (k[-1] != "r"):
-                values = np.array(list(df[f"bootstrap_list_{k}"].values)).reshape([-1])
-                metric_mean = np.mean(values)
-                metric_std = np.std(values)
-                df[k] = df[k].map(lambda _: (_ - metric_mean) / metric_std)
-                df[f"bootstrap_list_{k}"] = df[f"bootstrap_list_{k}"].map(
-                    lambda _: (np.array(_) - metric_mean) / metric_std)
-        return df
-    return df.groupby("tag_expt", group_keys=False).apply(to_apply).reset_index(drop=True)
 
 
 def average_comparison_metrics(df):
