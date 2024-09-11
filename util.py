@@ -95,13 +95,16 @@ def get_aggregate_measure(
     list_tag_model=[],
     key_task="localization",
     key_metric="performance",
+    bootstrap_repeats=1000,
+    random_seed=0,
 ):
     """
     Helper function to get aggregate measure values and bootstrap distribution from data files.
     Given a specified `key_task` ("localization", "spkr", or "word") and a `key_metric`
     ("performance" for overall task performance in noise or "pearsonr" / "rmse" for overall
-    human-model similarity), this function will return a list of aggregate measure values and
-    bootstrap distributions for each model specified in `list_tag_model`.
+    human-model similarity), this function will return the aggregate measure values for each
+    model specified in `list_tag_model` (mean values, individual values, and bootstrapped
+    distribution).
     """
     dict_tag_expt = {
         "localization": {
@@ -157,26 +160,27 @@ def get_aggregate_measure(
                 df.background_condition.isin([0, 1, 2, 3]),
             ])]
             key_metric = f"correct_{key_task}"
-        df = df.groupby(["tag_model"]).agg({
-            f"{key_metric}_list": list,
-        }).reset_index()
-        df[f"{key_metric}_list"] = df[f"{key_metric}_list"].map(lambda _: np.array(_).mean(axis=0))
+        df = df.rename(columns={f"{key_metric}_list": f"list_{key_metric}"})
+        df = df.groupby(["tag_model"]).agg({f"list_{key_metric}": list}).reset_index()
+        df[f"list_{key_metric}"] = df[f"list_{key_metric}"].map(lambda _: np.array(_).mean(axis=0))
         if "correct" in key_metric:
-            df[f"{key_metric}_list"] = df[f"{key_metric}_list"].map(lambda _: 100 * np.array(_))
-        df[f"{key_metric}"] = df[f"{key_metric}_list"].map(lambda _: np.mean(_))
-        df[f"{key_metric}_sem"] = df[f"{key_metric}_list"].map(lambda _: np.std(_) / np.sqrt(len(_)))
-        np.random.seed(0)
-        df[f"bootstrap_list_{key_metric}"] = df[f"{key_metric}_list"].map(
-            lambda _: np.random.choice(_, size=(1000, len(_))).mean(axis=1))
+            df[f"list_{key_metric}"] = df[f"list_{key_metric}"].map(lambda _: 100 * np.array(_))
+        df[f"{key_metric}"] = df[f"list_{key_metric}"].map(lambda _: np.mean(_))
+        df[f"{key_metric}_sem"] = df[f"list_{key_metric}"].map(lambda _: np.std(_) / np.sqrt(len(_)))
+        np.random.seed(random_seed)
+        df[f"bootstrap_list_{key_metric}"] = df[f"list_{key_metric}"].map(
+            lambda _: np.random.choice(_, size=(bootstrap_repeats, len(_))).mean(axis=1))
+    y = []
     list_y = []
-    list_y_dist = []
+    bootstrap_list_y = []
     for tag_model in list_tag_model:
         dfi = df[df.tag_model == tag_model]
         assert len(dfi) == 1, f"{tag_model=} --> dataframe of length {len(dfi)} (expected 1)"
         dfi = dfi.iloc[0]
-        list_y.append(dfi[key_metric])
-        list_y_dist.append(dfi[f"bootstrap_list_{key_metric}"])
-    return list_y, list_y_dist
+        y.append(dfi[key_metric])
+        list_y.append(dfi[f"list_{key_metric}"])
+        bootstrap_list_y.append(dfi[f"bootstrap_list_{key_metric}"])
+    return np.array(y), np.array(list_y), np.array(bootstrap_list_y)
 
 
 def average_comparison_metrics(df):
@@ -188,9 +192,11 @@ def average_comparison_metrics(df):
     for k in list_k:
         dict_agg[k] = "mean"
         dict_agg[f"bootstrap_list_{k}"] = list
+        dict_agg[f"list_{k}"] = list
     df_mean = df.groupby(["tag_model"]).agg(dict_agg).reset_index()
     for k in list_k:
         df_mean[f"bootstrap_list_{k}"] = df_mean[f"bootstrap_list_{k}"].map(lambda _: np.array(list(_)).mean(axis=0))
+        df_mean[f"list_{k}"] = df_mean[f"list_{k}"].map(lambda _: np.array(list(_)).mean(axis=0))
     df_mean["tag_expt"] = "AVERAGE"
     return df_mean
 
