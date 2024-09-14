@@ -51,15 +51,17 @@ def wrap_xticklabels(ax, width, break_long_words=False, **kwargs):
     return ax
 
 
-def normalized_rmse(y_human, y_model):
+def normalized_rmse(y_human, y_model, min_human=None, max_human=None):
     """
     Compute root-mean-squared error between human and
     model results, min/max normalized by human results.
     """
-    max_h = np.max(y_human)
-    min_h = np.min(y_human)
-    y_human = (y_human - min_h) / (max_h - min_h)
-    y_model = (y_model - min_h) / (max_h - min_h)
+    if min_human is None:
+        min_human = np.min(y_human)
+    if max_human is None:
+        max_human = np.max(y_human)
+    y_human = (y_human - min_human) / (max_human - min_human)
+    y_model = (y_model - min_human) / (max_human - min_human)
     return np.linalg.norm(y_human - y_model) / np.sqrt(y_human.shape[0])
 
 
