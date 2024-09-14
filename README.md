@@ -32,6 +32,8 @@ The included results files are sufficient to generate all figures in the paper u
 - Word and voice recognition experiments: [`figures_spkr_word_results.ipynb`](figures_spkr_word_results.ipynb)
 - Supplementary table of model architectures: [`model_architecture_table.ipynb`](model_architecture_table.ipynb)
 
+Code to train deep neural network models on a pure tone frequency discrimination task and compare their performance to prior ideal observer models is provided in a stand-alone repository, which is linked here as a submodule: [`freqdiscriminet`](freqdiscriminet).
+
 ## File structure
 ```
 ## Jupyter notebooks (demo, analyses, and figures)
@@ -117,6 +119,7 @@ The included results files are sufficient to generate all figures in the paper u
 ## External repositories
 |__ bez2018model (https://github.com/msaddler/bez2018model)
 |__ virtual_acoustic_room (https://github.com/msaddler/virtual_acoustic_room)
+|__ freqdiscriminet (stand-alone respository for pure tone frequency discrimination models)
 ```
 
 All model results in the paper are presented as the average across 10 different model architectures. For each model variant, the individual architectures have their own directories (e.g., [`models/sound_localization/simplified_IHC3000/arch01`](models/sound_localization/simplified_IHC3000/arch01)). A single directory contains:
