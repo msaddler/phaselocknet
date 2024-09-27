@@ -6,7 +6,7 @@
 #SBATCH --mem=16G
 ##SBATCH --gres=gpu:a100:1
 #SBATCH --gres=gpu:1 --exclude=node[017-094,097,098],dgx001,dgx002
-#SBATCH --array=0-19
+#SBATCH --array=0-2
 #SBATCH --partition=normal --time=2-0
 #SBATCH --requeue
 
@@ -15,6 +15,10 @@ job_idx=$(($SLURM_ARRAY_TASK_ID + $offset))
 
 # Specify model directory (`job_idx` is used to parallelize over `list_model_dir`)
 declare -a list_model_dir=(
+    "models/sound_localization/exploration/multitask_arch0_0000_ungrouped"
+    "models/sound_localization/exploration/multitask_arch0_0000_grouped"
+    "models/sound_localization/exploration/multitask_arch_test"
+
     "models/sound_localization/cochlearn/arch01"
     "models/sound_localization/cochlearn/arch02"
     "models/sound_localization/cochlearn/arch03"
