@@ -7,13 +7,13 @@
 #SBATCH --nodes=1
 #SBATCH --time=2-00:00:00
 #SBATCH --exclude=node[017-094,097,098],dgx001,dgx002
-#SBATCH --array=0-39
+#SBATCH --array=0-43
 ##SBATCH --partition=mcdermott
 #SBATCH --partition=use-everything
 #SBATCH --requeue
 
-regex_src="stimuli/sound_localization/optimization/valid/*.hdf5"
-dir_dst="$VAST_SCRATCH_PATH/stimuli/sound_localization/optimization/valid/tfrecords_simplified"
+regex_src="stimuli/spkr_word_recognition/optimization/valid/*.hdf5"
+dir_dst="$VAST_SCRATCH_PATH/stimuli/spkr_word_recognition/optimization/valid/tfrecords_simplified"
 jobs_per_source_file=2
 offset=0
 job_idx=$(($SLURM_ARRAY_TASK_ID + $offset))
