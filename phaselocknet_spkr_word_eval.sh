@@ -7,7 +7,8 @@
 ##SBATCH --gres=gpu:a100:1
 #SBATCH --gres=gpu:1 --exclude=node[017-094,097,098],dgx001,dgx002
 #SBATCH --array=0-29
-#SBATCH --partition=normal --time=2-0
+#SBATCH --time=2-0
+#SBATCH --partition=use-everything
 #SBATCH --requeue
 
 offset=0
@@ -16,36 +17,36 @@ eval_batch_size=32
 
 # Specify model directory (`job_idx` is used to parallelize over `list_model_dir`)
 declare -a list_model_dir=(
-    "models/spkr_word_recognition/cochlearn/arch0_0000"
-    "models/spkr_word_recognition/cochlearn/arch0_0001"
-    "models/spkr_word_recognition/cochlearn/arch0_0002"
-    "models/spkr_word_recognition/cochlearn/arch0_0004"
-    "models/spkr_word_recognition/cochlearn/arch0_0006"
-    "models/spkr_word_recognition/cochlearn/arch0_0007"
-    "models/spkr_word_recognition/cochlearn/arch0_0008"
-    "models/spkr_word_recognition/cochlearn/arch0_0009"
-    "models/spkr_word_recognition/cochlearn/arch0_0016"
-    "models/spkr_word_recognition/cochlearn/arch0_0017"
-    "models/word_recognition/cochlearn/arch0_0000"
-    "models/word_recognition/cochlearn/arch0_0001"
-    "models/word_recognition/cochlearn/arch0_0002"
-    "models/word_recognition/cochlearn/arch0_0004"
-    "models/word_recognition/cochlearn/arch0_0006"
-    "models/word_recognition/cochlearn/arch0_0007"
-    "models/word_recognition/cochlearn/arch0_0008"
-    "models/word_recognition/cochlearn/arch0_0009"
-    "models/word_recognition/cochlearn/arch0_0016"
-    "models/word_recognition/cochlearn/arch0_0017"
-    "models/spkr_recognition/cochlearn/arch0_0000"
-    "models/spkr_recognition/cochlearn/arch0_0001"
-    "models/spkr_recognition/cochlearn/arch0_0002"
-    "models/spkr_recognition/cochlearn/arch0_0004"
-    "models/spkr_recognition/cochlearn/arch0_0006"
-    "models/spkr_recognition/cochlearn/arch0_0007"
-    "models/spkr_recognition/cochlearn/arch0_0008"
-    "models/spkr_recognition/cochlearn/arch0_0009"
-    "models/spkr_recognition/cochlearn/arch0_0016"
-    "models/spkr_recognition/cochlearn/arch0_0017"
+    "models/spkr_word_recognition/extra_cochlearn/arch0_0000"
+    "models/spkr_word_recognition/extra_cochlearn/arch0_0001"
+    "models/spkr_word_recognition/extra_cochlearn/arch0_0002"
+    "models/spkr_word_recognition/extra_cochlearn/arch0_0004"
+    "models/spkr_word_recognition/extra_cochlearn/arch0_0006"
+    "models/spkr_word_recognition/extra_cochlearn/arch0_0007"
+    "models/spkr_word_recognition/extra_cochlearn/arch0_0008"
+    "models/spkr_word_recognition/extra_cochlearn/arch0_0009"
+    "models/spkr_word_recognition/extra_cochlearn/arch0_0016"
+    "models/spkr_word_recognition/extra_cochlearn/arch0_0017"
+    "models/word_recognition/extra_cochlearn/arch0_0000"
+    "models/word_recognition/extra_cochlearn/arch0_0001"
+    "models/word_recognition/extra_cochlearn/arch0_0002"
+    "models/word_recognition/extra_cochlearn/arch0_0004"
+    "models/word_recognition/extra_cochlearn/arch0_0006"
+    "models/word_recognition/extra_cochlearn/arch0_0007"
+    "models/word_recognition/extra_cochlearn/arch0_0008"
+    "models/word_recognition/extra_cochlearn/arch0_0009"
+    "models/word_recognition/extra_cochlearn/arch0_0016"
+    "models/word_recognition/extra_cochlearn/arch0_0017"
+    "models/spkr_recognition/extra_cochlearn/arch0_0000"
+    "models/spkr_recognition/extra_cochlearn/arch0_0001"
+    "models/spkr_recognition/extra_cochlearn/arch0_0002"
+    "models/spkr_recognition/extra_cochlearn/arch0_0004"
+    "models/spkr_recognition/extra_cochlearn/arch0_0006"
+    "models/spkr_recognition/extra_cochlearn/arch0_0007"
+    "models/spkr_recognition/extra_cochlearn/arch0_0008"
+    "models/spkr_recognition/extra_cochlearn/arch0_0009"
+    "models/spkr_recognition/extra_cochlearn/arch0_0016"
+    "models/spkr_recognition/extra_cochlearn/arch0_0017"
 
     "models/spkr_word_recognition/sr20000_IHC3000/arch0_0000"
     "models/spkr_word_recognition/sr20000_IHC3000/arch0_0001"
