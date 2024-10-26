@@ -1,6 +1,6 @@
 ## phaselocknet
 
-Code to accompany the manuscript "Models optimized for real-world tasks reveal the necessity of precise temporal coding in hearing" by Mark R. Saddler and Josh H. McDermott (2024).
+Code to accompany the manuscript ["Models optimized for real-world tasks reveal the task-dependent necessity of precise temporal coding in hearing"](https://doi.org/10.1101/2024.04.21.590435) by Mark R. Saddler and Josh H. McDermott (2024).
 
 ## Dependencies
 
@@ -32,7 +32,7 @@ The included results files are sufficient to generate all figures in the paper u
 - Word and voice recognition experiments: [`figures_spkr_word_results.ipynb`](figures_spkr_word_results.ipynb)
 - Supplementary table of model architectures: [`model_architecture_table.ipynb`](model_architecture_table.ipynb)
 
-Code to train deep neural network models on a pure tone frequency discrimination task and compare their performance to prior ideal observer models is provided in a stand-alone repository, which is linked here as a submodule: [`freqdiscriminet`](freqdiscriminet).
+Code to train deep neural network models on a pure tone frequency discrimination task and compare their performance to prior ideal observer models is provided in a stand-alone repository, which is linked here as a submodule: [`freqdiscriminet`](https://github.com/msaddler/freqdiscriminet).
 
 ## File structure
 ```
@@ -119,7 +119,7 @@ Code to train deep neural network models on a pure tone frequency discrimination
 ## External repositories
 |__ bez2018model (https://github.com/msaddler/bez2018model)
 |__ virtual_acoustic_room (https://github.com/msaddler/virtual_acoustic_room)
-|__ freqdiscriminet (stand-alone respository for pure tone frequency discrimination models)
+|__ freqdiscriminet (https://github.com/msaddler/freqdiscriminet)
 ```
 
 All model results in the paper are presented as the average across 10 different model architectures. For each model variant, the individual architectures have their own directories (e.g., [`models/sound_localization/simplified_IHC3000/arch01`](models/sound_localization/simplified_IHC3000/arch01)). A single directory contains:

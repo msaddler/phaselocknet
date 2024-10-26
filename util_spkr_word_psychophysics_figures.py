@@ -281,12 +281,6 @@ def make_plot_pitch_shifted_recognition(
             'capsize': 3,
         }
         kwargs_plot.update(kwargs_plot_update)
-#         ax.fill_between(
-#             x,
-#             y-yerr,
-#             y+yerr,
-#             alpha=0.15,
-#             facecolor=kwargs_plot['color'])
         ax.errorbar(x, y, yerr=yerr, **kwargs_errorbar)
         ax.plot(x, y, **kwargs_plot)
     kwargs_format_axes = {
@@ -295,7 +289,7 @@ def make_plot_pitch_shifted_recognition(
         'xlimits': [-13, 13],
         'xticks': [-12, -9, -6, -3, 0, 3, 6, 9, 12],
         'xticklabels': [-12, -9, -6, -3, 0, 3, 6, 9, 12],
-        'str_xlabel': 'Pitch shift (semitones)',
+        'str_xlabel': 'F0 shift (semitones)',
         'str_ylabel': str_ylabel,
     }
     kwargs_format_axes.update(kwargs_format_axes_update)
@@ -382,91 +376,6 @@ def make_plot_pitch_condition_recognition(
             'handlelength': 3.0,
             'markerscale': 1.0,
             'fontsize': 12,
-        }
-        kwargs_legend.update(kwargs_legend_update)
-        ax.legend(**kwargs_legend)
-    return ax
-
-
-def make_plot_voice_discrimination(
-        ax,
-        df,
-        key_task='spkr',
-        restrict_background_condition=[4, 3],
-        restrict_snr=None,
-#         restrict_snr=[-24, -18, -12, -6, 0, 6, np.inf],
-        replace_inf=12,
-        color=None,
-        fontsize_legend=10,
-        kwargs_plot_update={},
-        kwargs_legend_update={},
-        xlimits=[-26.5, 14.5],
-        kwargs_format_axes_update={},
-        include_legend=True):
-    """
-    """
-    if not key_task == 'spkr':
-        return ax
-    list_background_condition = np.unique(df.background_condition.values)
-    if restrict_background_condition is not None:
-        list_background_condition = restrict_background_condition
-    if restrict_snr is not None:
-        df = df[df.snr.isin(restrict_snr)]
-    kwargs_plot_condition_update = {
-        0: {'label': 'Auditory scenes', 'color': np.array([193, 190, 153])/256, 'marker': 'v'},
-        1: {'label': '8-speaker babble', 'color': np.array([187, 134, 73])/256, 'marker': 'D'},
-        2: {'label': 'Instrumental music', 'color': np.array([109, 109, 140])/256, 'marker': 's'},
-        3: {'label': 'Stationary noise', 'color': 'k', 'marker': 'o'},
-        4: {'label': 'Modulated noise', 'color': 'k', 'marker': 'o', 'mfc': None},
-    }
-    for background_condition in list_background_condition:
-        dfi = df[df.background_condition == background_condition]
-        x = dfi['snr'].values
-        x[np.isinf(x)] = replace_inf
-        y = 100 * dfi[f'correct_mean'].values
-        yerr = 2 * 100 * dfi[f'correct_sem'].values
-        IDX = np.logical_and(x >= xlimits[0], x <= xlimits[1])
-        x = x[IDX]
-        y = y[IDX]
-        yerr = yerr[IDX]
-        kwargs_plot = {
-            'marker': '.',
-            'ms': 9,
-            'mfc': 'w',
-            'mew': 1.5,
-        }
-        kwargs_plot.update(kwargs_plot_condition_update[int(background_condition)])
-        kwargs_plot.update(kwargs_plot_update)
-        if color is not None:
-            kwargs_plot['color'] = color
-        ax.fill_between(
-            x,
-            y-yerr,
-            y+yerr,
-            alpha=0.15,
-            facecolor=kwargs_plot['color'])
-        ax.plot(x, y, **kwargs_plot)
-    kwargs_format_axes = {
-        'ylimits': [45, 105],
-        'yticks': [50, 60, 70, 80, 90, 100],
-        'xlimits': xlimits,
-        'xticks': [-24, -18, -12, -6, 0, 6, 12],
-        'xticklabels': ['-24', '-18', '-12', '-6', '0', '+6', '+Inf'],
-        'str_xlabel': 'SNR (dB)',
-        'str_ylabel': 'Voice discrimination (% correct)',
-    }
-    kwargs_format_axes.update(kwargs_format_axes_update)
-    ax = util_figures.format_axes(ax, **kwargs_format_axes)
-    if include_legend:
-        kwargs_legend = {
-            'loc': 'upper left',
-            'borderpad': 0.2,
-            'borderaxespad': 1.0,
-            'handletextpad': 1.0,
-            'frameon': False,
-            'handlelength': 0,
-            'markerscale': fontsize_legend / 12,
-            'fontsize': fontsize_legend,
         }
         kwargs_legend.update(kwargs_legend_update)
         ax.legend(**kwargs_legend)
