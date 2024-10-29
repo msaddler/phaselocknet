@@ -4,7 +4,7 @@ Code to accompany the manuscript ["Models optimized for real-world tasks reveal 
 
 ## Dependencies
 
-This is a repository of Python (3.11.4) code. A complete list of Python dependencies is contained in [`requirements.txt`](requirements.txt). The models were developed in `tensorflow-2.13.0` on machines running CentOS Linux 7.
+This is a repository of Python (3.11.4) code. A complete list of Python dependencies is contained in [`requirements.txt`](requirements.txt). The dependencies can be installed in a Python environment with the command `pip install -r requirements.txt` (5-10 minutes). The models were developed in `tensorflow-2.13.0` on machines running CentOS Linux 7. Running the models at scale is best done on a CUDA-enabled GPU (NVidia A100 GPUs were used for training); however, the models can run slowly with a CPU-only `tensorflow` installation.
 
 ## Sound Datasets and Model Weights
 
