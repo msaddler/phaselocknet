@@ -1,8 +1,5 @@
-Cython==3.0.0
-dask==2024.10.0
 h5py==3.9.0
 ipython==8.12.3
-matlab==0.1
 matplotlib==3.8.2
 numpy==1.24.3
 numpy==1.25.2
@@ -15,8 +12,4 @@ soxr==0.3.7
 tensorflow==2.13.0
 tensorflow_io==0.33.0
 tensorflow_probability==0.21.0
-torch==2.5.1
-torchaudio==2.5.1
-torchmetrics==1.5.1
-torchvision==0.20.1
 tqdm==4.65.0
