@@ -1,10 +1,18 @@
 ## phaselocknet
 
-Code to accompany the manuscript ["Models optimized for real-world tasks reveal the task-dependent necessity of precise temporal coding in hearing"](https://doi.org/10.1101/2024.04.21.590435) by Mark R. Saddler and Josh H. McDermott (2024).
+Code to accompany ["Models optimized for real-world tasks reveal the task-dependent necessity of precise temporal coding in hearing"](https://doi.org/10.1101/2024.04.21.590435) by Mark R. Saddler and Josh H. McDermott (2024).
 
 ## Dependencies
 
-This is a repository of Python (3.11.4) code. A complete list of Python dependencies is contained in [`requirements.txt`](requirements.txt). The dependencies can be installed in a Python environment with the command `pip install -r requirements.txt` (5-10 minutes). The models were developed in `tensorflow-2.13.0` on machines running CentOS Linux 7. Running the models at scale is best done on a CUDA-enabled GPU (NVidia A100 GPUs were used for training); however, the models can run slowly with a CPU-only `tensorflow` installation.
+This is a repository of Python (3.11.4) code. A complete list of Python dependencies is contained in [`requirements.txt`](requirements.txt). The models were developed in `tensorflow-2.13.0` on machines running CentOS Linux 7. Running the models at scale is best done on a CUDA-enabled GPU (NVidia A100 GPUs were used for training); however, the models can run slowly with a CPU-only `tensorflow` installation.
+
+```
+Installation
+------------
+(0) pip install required Python packages (requirements.txt)
+(1) git clone git@github.com:msaddler/phaselocknet.git
+(2) cd phaselocknet
+```
 
 ## Sound Datasets and Model Weights
 
@@ -83,6 +91,7 @@ Code to train deep neural network models on a pure tone frequency discrimination
         |__ sound_localization
         |__ spkr_word_recognition
     |__ misc
+    |__ source_data_files
 
 ## Model config files, checkpoints (trained weights), and evaluation output files
 |__ models
