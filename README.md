@@ -1,6 +1,6 @@
 ## phaselocknet
 
-Code to accompany ["Models optimized for real-world tasks reveal the task-dependent necessity of precise temporal coding in hearing"](https://doi.org/10.1101/2024.04.21.590435) by Mark R. Saddler and Josh H. McDermott (2024).
+Code to accompany ["Models optimized for real-world tasks reveal the task-dependent necessity of precise temporal coding in hearing"](https://doi.org/10.1101/2024.04.21.590435) by Mark R. Saddler and Josh H. McDermott (in press, Nature Communications). Models in the paper and in this repository were all developed in TensorFlow; however, minimal code to run models in PyTorch is also available: [phaselocknet_torch](https://github.com/msaddler/phaselocknet_torch).
 
 ## Dependencies
 
@@ -14,7 +14,7 @@ Installation
 (2) cd phaselocknet
 ```
 
-## Sound Datasets and Model Weights
+## Sound datasets and model weights
 
 Sound datasets, trained model weights, and raw model evaluation outputs for each model configuration are too large to include here, but can be downloaded from our [Google Drive](https://drive.google.com/drive/folders/1YgC7x6Ot84XZInlSyHK-9NQ0jhhGUS2z?usp=share_link). The file structure of the Google Drive (which mirrors this repository) should be preserved for code to run without altering file paths.
 
