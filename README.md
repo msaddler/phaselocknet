@@ -4,7 +4,7 @@ Code to accompany ["Models optimized for real-world tasks reveal the task-depend
 
 ## Dependencies
 
-This is a repository of Python (3.11.4) code. A complete list of Python dependencies is contained in [`requirements.txt`](requirements.txt). The models were developed in `tensorflow-2.13.0` on machines running CentOS Linux 7. Running the models at scale is best done on a CUDA-enabled GPU (NVidia A100 GPUs were used for training); however, the models can run slowly with a CPU-only `tensorflow` installation.
+This is a repository of Python (3.11.4) code. A complete list of Python dependencies is contained in [`requirements.txt`](requirements.txt). The models were developed in `tensorflow-2.13.0` on machines running CentOS Linux 7. Running the models at scale is best done with a CUDA-enabled GPU (NVidia A100 GPUs were used for training); however, the models can run slowly with a CPU-only `tensorflow` installation.
 
 ```
 Installation
@@ -28,7 +28,7 @@ Code for training and evaluating the models at scale is located in [`phaselockne
 - [`phaselocknet_localization_train.sh`](phaselocknet_localization_train.sh)
 - [`phaselocknet_localization_eval.sh`](phaselocknet_localization_eval.sh)
 - [`phaselocknet_spkr_word_train.sh`](phaselocknet_spkr_word_train.sh)
-- [`phaselocknet_spkr_word_eval.sh`](phaselocknet_spkr_word_eval.sh))
+- [`phaselocknet_spkr_word_eval.sh`](phaselocknet_spkr_word_eval.sh)
 
 The [`model_run_all_experiments.ipynb`](model_run_all_experiments.ipynb) Jupyter Notebook can be used to run all analyses in the paper, provided all model evaluation output files have been downloaded from the [Google Drive](https://drive.google.com/drive/folders/1YgC7x6Ot84XZInlSyHK-9NQ0jhhGUS2z?usp=share_link). This notebook generates the results files in the [`data/model`](data/model) folder. These results files contain human and model behavioral data as well as human-model comparison metrics.
 
@@ -133,7 +133,7 @@ Code to train deep neural network models on a pure tone frequency discrimination
 
 All model results in the paper are presented as the average across 10 different model architectures. For each model variant, the individual architectures have their own directories (e.g., [`models/sound_localization/simplified_IHC3000/arch01`](models/sound_localization/simplified_IHC3000/arch01)). A single directory contains:
 - [`config.json`](models/sound_localization/simplified_IHC3000/arch01/config.json): cochlear model parameters and optimization hyperparameters
-- [`arch.json`](models/sound_localization/simplified_IHC3000/arch01/arch.json): artificial neural network architecture 
+- [`arch.json`](models/sound_localization/simplified_IHC3000/arch01/arch.json): deep neural network architecture 
 - [`ckpt_BEST`](https://drive.google.com/drive/folders/1EylraQkpaLelBUIImv3k0nqGsJxBIAiT?usp=share_link): optimized neural network weights (Google Drive)
 - [`log_optimize.csv`](https://drive.google.com/drive/folders/1EylraQkpaLelBUIImv3k0nqGsJxBIAiT?usp=share_link): model optimization log (Google Drive)
 - [`EVAL_ * .json`](https://drive.google.com/drive/folders/1EylraQkpaLelBUIImv3k0nqGsJxBIAiT?usp=share_link): model evaluation output files (Google Drive)
