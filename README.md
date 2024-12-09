@@ -1,6 +1,6 @@
 ## phaselocknet
 
-Code to accompany ["Models optimized for real-world tasks reveal the task-dependent necessity of precise temporal coding in hearing"](https://doi.org/10.1101/2024.04.21.590435) by Mark R. Saddler and Josh H. McDermott (in press, Nature Communications). Models in the paper and in this repository were all developed in TensorFlow; however, minimal code to run models in PyTorch is also available: [phaselocknet_torch](https://github.com/msaddler/phaselocknet_torch).
+Code to accompany ["Models optimized for real-world tasks reveal the task-dependent necessity of precise temporal coding in hearing"](https://doi.org/10.1038/s41467-024-54700-5) by Mark R. Saddler and Josh H. McDermott (2024, Nature Communications). Models in the paper and in this repository were all developed in TensorFlow; however, minimal code to run models in PyTorch is also available: [phaselocknet_torch](https://github.com/msaddler/phaselocknet_torch).
 
 ## Dependencies
 
