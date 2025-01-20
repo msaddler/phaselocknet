@@ -65,7 +65,8 @@
         "densify_jitter_indices": null,
         "feature_description": "config_feature_description.pckl",
         "features_to_exclude": [
-            "nervegram_meanrates"
+            "nervegram_meanrates",
+            "list_background_index_brir"
         ]
     },
     "kwargs_optimize": {
