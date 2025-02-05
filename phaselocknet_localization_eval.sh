@@ -6,7 +6,7 @@
 #SBATCH --mem=24G
 ##SBATCH --gres=gpu:a100:1
 #SBATCH --gres=gpu:1 --exclude=node[017-094,097,098],dgx001,dgx002
-#SBATCH --array=0-49
+#SBATCH --array=0-119
 #SBATCH --partition=normal --time=2-0
 #SBATCH --requeue
 
@@ -16,6 +16,27 @@ eval_batch_size=32
 
 # Specify model directory (`job_idx` is used to parallelize over `list_model_dir`)
 declare -a list_model_dir=(
+    # "models/sound_localization/sr20000_IHC3000/arch01"
+    # "models/sound_localization/sr20000_IHC3000/arch02"
+    # "models/sound_localization/sr20000_IHC3000/arch03"
+    # "models/sound_localization/sr20000_IHC3000/arch04"
+    # "models/sound_localization/sr20000_IHC3000/arch05"
+    # "models/sound_localization/sr20000_IHC3000/arch06"
+    # "models/sound_localization/sr20000_IHC3000/arch07"
+    # "models/sound_localization/sr20000_IHC3000/arch08"
+    # "models/sound_localization/sr20000_IHC3000/arch09"
+    # "models/sound_localization/sr20000_IHC3000/arch10"
+    # "models/sound_localization/sr20000_IHC3000_delayed_integration/arch01"
+    # "models/sound_localization/sr20000_IHC3000_delayed_integration/arch02"
+    # "models/sound_localization/sr20000_IHC3000_delayed_integration/arch03"
+    # "models/sound_localization/sr20000_IHC3000_delayed_integration/arch04"
+    # "models/sound_localization/sr20000_IHC3000_delayed_integration/arch05"
+    # "models/sound_localization/sr20000_IHC3000_delayed_integration/arch06"
+    # "models/sound_localization/sr20000_IHC3000_delayed_integration/arch07"
+    # "models/sound_localization/sr20000_IHC3000_delayed_integration/arch08"
+    # "models/sound_localization/sr20000_IHC3000_delayed_integration/arch09"
+    # "models/sound_localization/sr20000_IHC3000_delayed_integration/arch10"
+
     "models/sound_localization/simplified_IHC3000/arch01"
     "models/sound_localization/simplified_IHC3000/arch02"
     "models/sound_localization/simplified_IHC3000/arch03"
@@ -67,27 +88,6 @@ declare -a list_model_dir=(
     "models/sound_localization/simplified_IHC3000_delayed_integration/arch09"
     "models/sound_localization/simplified_IHC3000_delayed_integration/arch10"
 
-    "models/sound_localization/sr20000_IHC3000/arch01"
-    "models/sound_localization/sr20000_IHC3000/arch02"
-    "models/sound_localization/sr20000_IHC3000/arch03"
-    "models/sound_localization/sr20000_IHC3000/arch04"
-    "models/sound_localization/sr20000_IHC3000/arch05"
-    "models/sound_localization/sr20000_IHC3000/arch06"
-    "models/sound_localization/sr20000_IHC3000/arch07"
-    "models/sound_localization/sr20000_IHC3000/arch08"
-    "models/sound_localization/sr20000_IHC3000/arch09"
-    "models/sound_localization/sr20000_IHC3000/arch10"
-    "models/sound_localization/sr20000_IHC3000_delayed_integration/arch01"
-    "models/sound_localization/sr20000_IHC3000_delayed_integration/arch02"
-    "models/sound_localization/sr20000_IHC3000_delayed_integration/arch03"
-    "models/sound_localization/sr20000_IHC3000_delayed_integration/arch04"
-    "models/sound_localization/sr20000_IHC3000_delayed_integration/arch05"
-    "models/sound_localization/sr20000_IHC3000_delayed_integration/arch06"
-    "models/sound_localization/sr20000_IHC3000_delayed_integration/arch07"
-    "models/sound_localization/sr20000_IHC3000_delayed_integration/arch08"
-    "models/sound_localization/sr20000_IHC3000_delayed_integration/arch09"
-    "models/sound_localization/sr20000_IHC3000_delayed_integration/arch10"
-
     "models/sound_localization/IHC0050/arch01"
     "models/sound_localization/IHC0050/arch02"
     "models/sound_localization/IHC0050/arch03"
@@ -138,6 +138,27 @@ declare -a list_model_dir=(
     "models/sound_localization/IHC3000_delayed_integration/arch08"
     "models/sound_localization/IHC3000_delayed_integration/arch09"
     "models/sound_localization/IHC3000_delayed_integration/arch10"
+
+    "models/sound_localization/repeat_IHC3000_delayed_integration/arch01"
+    "models/sound_localization/repeat_IHC3000_delayed_integration/arch02"
+    "models/sound_localization/repeat_IHC3000_delayed_integration/arch03"
+    "models/sound_localization/repeat_IHC3000_delayed_integration/arch04"
+    "models/sound_localization/repeat_IHC3000_delayed_integration/arch05"
+    "models/sound_localization/repeat_IHC3000_delayed_integration/arch06"
+    "models/sound_localization/repeat_IHC3000_delayed_integration/arch07"
+    "models/sound_localization/repeat_IHC3000_delayed_integration/arch08"
+    "models/sound_localization/repeat_IHC3000_delayed_integration/arch09"
+    "models/sound_localization/repeat_IHC3000_delayed_integration/arch10"
+    "models/sound_localization/repeat_simplified_IHC3000_delayed_integration/arch01"
+    "models/sound_localization/repeat_simplified_IHC3000_delayed_integration/arch02"
+    "models/sound_localization/repeat_simplified_IHC3000_delayed_integration/arch03"
+    "models/sound_localization/repeat_simplified_IHC3000_delayed_integration/arch04"
+    "models/sound_localization/repeat_simplified_IHC3000_delayed_integration/arch05"
+    "models/sound_localization/repeat_simplified_IHC3000_delayed_integration/arch06"
+    "models/sound_localization/repeat_simplified_IHC3000_delayed_integration/arch07"
+    "models/sound_localization/repeat_simplified_IHC3000_delayed_integration/arch08"
+    "models/sound_localization/repeat_simplified_IHC3000_delayed_integration/arch09"
+    "models/sound_localization/repeat_simplified_IHC3000_delayed_integration/arch10"
 )
 model_dir="${list_model_dir[$job_idx]}"
 echo $HOSTNAME $job_idx $model_dir
